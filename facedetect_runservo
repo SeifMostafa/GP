@@ -3,7 +3,16 @@
 #include <signal.h>
 #include <string.h>
 
+#include "opencv2/objdetect.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+#include <iostream>
+#include <stdlib.h>
 #include <pigpiod_if2.h>
+
+
+using namespace std;
+using namespace cv;
 
 /*
 # servo_demo_D.c
@@ -52,8 +61,16 @@ static void setSignalHandler(int signum, signalFunc_t sigHandler)
 
    sigaction(signum, &new, NULL);
 }
+public void RunS(){
+  system("gcc -Wall -pthread -o servo_demo_D servo_demo_D.c -lpigpiod_if2");
+  system("sudo killall pigpiod");
+  system("sudo pigpiod");
+  system("chmod +x facedetect.cpp");
+  system("chmod +x runservo.c");
+  RunServo(18,NULL);
+}
 
-int main(int argc, char *argv[])
+int RunServo(int argc, char *argv[])
 {
    int i, g, pi;
 
@@ -123,15 +140,6 @@ int main(int argc, char *argv[])
    return 0;
 }
 
-#include "opencv2/objdetect.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include <iostream>
-#include <stdlib.h>
-
-
-using namespace std;
-using namespace cv;
 
 static void help()
 {
@@ -230,7 +238,7 @@ int main( int argc, const char** argv )
 
             Mat frame1 = frame.clone();
             detectAndDraw( frame1, cascade, nestedCascade, scale, tryflip );
-            char c = (char)waitKey(10);
+            char c = (char)waitKey(500);
             if( c == 27 || c == 'q' || c == 'Q' )
                 break;
         }
@@ -365,6 +373,6 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
             radius = cvRound((nr.width + nr.height)*0.25*scale);
             circle( img, center, radius, color, 3, 8, 0 );
         }
-    }                        system("./servo_demo_D.c 18");
+    }                        RunS();
     imshow( "result", img );
 }
