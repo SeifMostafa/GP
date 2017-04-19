@@ -8,29 +8,33 @@ using namespace std;
 using namespace cv;
 void detectAndDisplay( Mat frame );
 String body_cascade_name = "haarcascade_mcs_upperbody.xml";
-String body_cascade_name = "haarcascade_frontalface_alt.xml";
+String frontalFace_cascade_name = "haarcascade_frontalface_alt.xml";
+String profileFace_cascade_name ="haarcascade_profileface.xml";
 CascadeClassifier body_cascade;
-CascadeClassifier face_cascade;
+CascadeClassifier frontalFace_cascade;
+CascadeClassifier profileFace_cascade;
 String window_name = "Capture - Face detection";
 int main( void )
 {
     Mat frame;
     //-- 1. Load the cascades
     if( !body_cascade.load( body_cascade_name ) ){ printf("--(!)Error loading body cascade\n"); return -1; };
-    if( !face_cascade.load( body_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
+    if( !frontalFace_cascade.load( frontalFace_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
+    if( !profileFace_cascade.load( profileFace_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
+
     VideoCapture capture;
     capture.open(0);
     while(1){
 		capture.read(frame);
         detectAndDisplay( frame );
-        waitKey(100);
+        waitKey(250);
     }
     return 0;
 }
 
 void detectAndDisplay( Mat frame )
 {
-    std::vector<Rect> faces;
+    std::vector<Rect> bodies;
     Mat frame_gray=Mat::zeros( frame.size(), frame.type() );
      /// Do the operation new_image(i,j) = alpha*image(i,j) + beta
 /* for( int y = 0; y < frame.rows; y++ )
@@ -45,24 +49,35 @@ void detectAndDisplay( Mat frame )
     imshow("Modified",frame_gray);*/
     cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
     //imshow("Modified_gray",frame_gray);
-    //equalizeHist( frame_gray, frame_gray );
+    equalizeHist( frame_gray, frame_gray );
     //imshow("Modified_equalized",frame_gray);
 
-    //-- Detect faces
-    body_cascade.detectMultiScale( frame_gray, faces, 1.1, 4, 0|CASCADE_SCALE_IMAGE, Size(10, 30) );
-    for ( size_t i = 0; i < faces.size(); i++ )
+    //-- Detect bodies
+    body_cascade.detectMultiScale( frame_gray, bodies, 1.2, 4, 0|CASCADE_SCALE_IMAGE, Size(70, 300) );
+    for ( size_t i = 0; i < bodies.size(); i++ )
     {
-        Point center( faces[i].x + faces[i].width/2, faces[i].y + faces[i].height/2 );
-        ellipse( frame, center, Size( faces[i].width/2, faces[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
-        Mat faceROI = frame_gray( faces[i] );
-        std::vector<Rect> eyes;
-        //-- In each face, detect eyes
-        face_cascade.detectMultiScale( faceROI, eyes, 1.1, 2, 0 |CASCADE_SCALE_IMAGE, Size(10, 30) );
-        for ( size_t j = 0; j < eyes.size(); j++ )
+        Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
+        ellipse( frame, center, Size( bodies[i].width/2, bodies[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
+        Mat faceROI = frame_gray( bodies[i] );
+        std::vector<Rect> faces;
+        //-- In each body, detect faces
+        bool check=true;
+        frontalFace_cascade.detectMultiScale( faceROI, faces, 1.1, 2, 0 |CASCADE_SCALE_IMAGE, Size(10, 30) );
+        for ( size_t j = 0; j < faces.size(); j++ )
         {
-            Point eye_center( faces[i].x + eyes[j].x + eyes[j].width/2, faces[i].y + eyes[j].y + eyes[j].height/2 );
-            int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
-            circle( frame, eye_center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
+            check=false;
+            Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
+            int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
+            circle( frame, face_center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
+        }
+        if(check){
+        profileFace_cascade.detectMultiScale( faceROI, faces, 1.1, 6, 0 |CASCADE_SCALE_IMAGE, Size(10, 30) );
+        for ( size_t j = 0; j < faces.size(); j++ )
+        {
+            Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
+            int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
+            circle( frame, face_center, radius, Scalar( 255, 255, 0 ), 4, 8, 0 );
+        }
         }
     }
     //-- Show what you got
