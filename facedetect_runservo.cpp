@@ -1,11 +1,16 @@
 #include "opencv2/objdetect/objdetect.hpp"
-//#include "opencv2/videoio.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
+#include <vector>
 #include <stdio.h>
+
+#include <wiringPi.h>
+#include <softPwm.h>
+
 using namespace std;
 using namespace cv;
+
 void detectAndDisplay( Mat frame );
 String body_cascade_name = "haarcascade_mcs_upperbody.xml";
 String frontalFace_cascade_name = "haarcascade_frontalface_alt.xml";
@@ -14,19 +19,52 @@ CascadeClassifier body_cascade;
 CascadeClassifier frontalFace_cascade;
 CascadeClassifier profileFace_cascade;
 String window_name = "Capture - Face detection";
+
+void RunServo(int pos){
+wiringPiSetup();
+pinMode(1,PWM_OUTPUT);
+int c=0;
+while(c<pos)
+{
+pwmWrite(1,1);
+}
+
+}
+Mat3b binding(Mat img1,Mat img2){
+
+    // Get dimension of final image
+    int rows = max(img1.rows, img2.rows);
+    int cols = img1.cols + img2.cols;
+
+    // Create a black image
+    Mat3b res(rows, cols);
+
+    // Copy images in correct position
+    img1.copyTo(res(Rect(0, 0, img1.cols, img1.rows)));
+    img2.copyTo(res(Rect(img1.cols, 0, img2.cols, img2.rows)));
+return res;
+}
+void printcenters(vector<Point>centers){
+for(int u=0;u<centers.size();u++){
+cout<<centers.get(u);
+}
+}
 int main( void )
 {
-    Mat frame;
+    Mat frame,frame2;
     //-- 1. Load the cascades
     if( !body_cascade.load( body_cascade_name ) ){ printf("--(!)Error loading body cascade\n"); return -1; };
     if( !frontalFace_cascade.load( frontalFace_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
     if( !profileFace_cascade.load( profileFace_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
 
     VideoCapture capture;
-    capture.open(0);
     while(1){
-		capture.read(frame);
-        detectAndDisplay( frame );
+        capture.open(0);
+	capture.read(frame);
+ 	capture.open(1);
+	capture.read(frame2);
+
+        detectAndDisplay( binding(frame,frame2) );
         waitKey(250);
     }
     return 0;
@@ -34,8 +72,12 @@ int main( void )
 
 void detectAndDisplay( Mat frame )
 {
+	vector<Point>Centers = new vector<Point>;
+
     std::vector<Rect> bodies;
     Mat frame_gray=Mat::zeros( frame.size(), frame.type() );
+
+
      /// Do the operation new_image(i,j) = alpha*image(i,j) + beta
 /* for( int y = 0; y < frame.rows; y++ )
     { for( int x = 0; x < frame.cols; x++ )
@@ -47,6 +89,8 @@ void detectAndDisplay( Mat frame )
     }
     }
     imshow("Modified",frame_gray);*/
+
+
     cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
     //imshow("Modified_gray",frame_gray);
     equalizeHist( frame_gray, frame_gray );
@@ -57,6 +101,7 @@ void detectAndDisplay( Mat frame )
     for ( size_t i = 0; i < bodies.size(); i++ )
     {
         Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
+	Centers.push(center);
         ellipse( frame, center, Size( bodies[i].width/2, bodies[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
         Mat faceROI = frame_gray( bodies[i] );
         std::vector<Rect> faces;
@@ -79,7 +124,10 @@ void detectAndDisplay( Mat frame )
             circle( frame, face_center, radius, Scalar( 255, 255, 0 ), 4, 8, 0 );
         }
         }
+
     }
     //-- Show what you got
+	printcenters(Centers);
     imshow( window_name, frame );
 }
+
