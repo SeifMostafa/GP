@@ -2,6 +2,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
+#include <vector>
 #include <stdio.h>
 
 #include <wiringPi.h>
@@ -43,6 +44,11 @@ Mat3b binding(Mat img1,Mat img2){
     img2.copyTo(res(Rect(img1.cols, 0, img2.cols, img2.rows)));
 return res;
 }
+void printcenters(vector<Point>centers){
+for(int u=0;u<centers.size();u++){
+cout<<centers.get(u);
+}
+}
 int main( void )
 {
     Mat frame,frame2;
@@ -66,8 +72,12 @@ int main( void )
 
 void detectAndDisplay( Mat frame )
 {
+	vector<Point>Centers = new vector<Point>;
+
     std::vector<Rect> bodies;
     Mat frame_gray=Mat::zeros( frame.size(), frame.type() );
+
+
      /// Do the operation new_image(i,j) = alpha*image(i,j) + beta
 /* for( int y = 0; y < frame.rows; y++ )
     { for( int x = 0; x < frame.cols; x++ )
@@ -79,6 +89,8 @@ void detectAndDisplay( Mat frame )
     }
     }
     imshow("Modified",frame_gray);*/
+
+
     cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
     //imshow("Modified_gray",frame_gray);
     equalizeHist( frame_gray, frame_gray );
@@ -89,6 +101,7 @@ void detectAndDisplay( Mat frame )
     for ( size_t i = 0; i < bodies.size(); i++ )
     {
         Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
+	Centers.push(center);
         ellipse( frame, center, Size( bodies[i].width/2, bodies[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
         Mat faceROI = frame_gray( bodies[i] );
         std::vector<Rect> faces;
@@ -111,9 +124,10 @@ void detectAndDisplay( Mat frame )
             circle( frame, face_center, radius, Scalar( 255, 255, 0 ), 4, 8, 0 );
         }
         }
+
     }
     //-- Show what you got
-
+	printcenters(Centers);
     imshow( window_name, frame );
 }
 
