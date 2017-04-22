@@ -1,11 +1,15 @@
 #include "opencv2/objdetect/objdetect.hpp"
-//#include "opencv2/videoio.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
 #include <stdio.h>
+
+#include <wiringPi.h>
+#include <softPwm.h>
+
 using namespace std;
 using namespace cv;
+
 void detectAndDisplay( Mat frame );
 String body_cascade_name = "haarcascade_mcs_upperbody.xml";
 String frontalFace_cascade_name = "haarcascade_frontalface_alt.xml";
@@ -14,19 +18,47 @@ CascadeClassifier body_cascade;
 CascadeClassifier frontalFace_cascade;
 CascadeClassifier profileFace_cascade;
 String window_name = "Capture - Face detection";
+
+void RunServo(int pos){
+wiringPiSetup();
+pinMode(1,PWM_OUTPUT);
+int c=0;
+while(c<pos)
+{
+pwmWrite(1,1);
+}
+
+}
+Mat3b binding(Mat img1,Mat img2){
+
+    // Get dimension of final image
+    int rows = max(img1.rows, img2.rows);
+    int cols = img1.cols + img2.cols;
+
+    // Create a black image
+    Mat3b res(rows, cols);
+
+    // Copy images in correct position
+    img1.copyTo(res(Rect(0, 0, img1.cols, img1.rows)));
+    img2.copyTo(res(Rect(img1.cols, 0, img2.cols, img2.rows)));
+return res;
+}
 int main( void )
 {
-    Mat frame;
+    Mat frame,frame2;
     //-- 1. Load the cascades
     if( !body_cascade.load( body_cascade_name ) ){ printf("--(!)Error loading body cascade\n"); return -1; };
     if( !frontalFace_cascade.load( frontalFace_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
     if( !profileFace_cascade.load( profileFace_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
 
     VideoCapture capture;
-    capture.open(0);
     while(1){
-		capture.read(frame);
-        detectAndDisplay( frame );
+        capture.open(0);
+	capture.read(frame);
+ 	capture.open(1);
+	capture.read(frame2);
+
+        detectAndDisplay( binding(frame,frame2) );
         waitKey(250);
     }
     return 0;
@@ -81,5 +113,7 @@ void detectAndDisplay( Mat frame )
         }
     }
     //-- Show what you got
+
     imshow( window_name, frame );
 }
+

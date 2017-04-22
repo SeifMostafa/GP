@@ -1,4 +1,5 @@
-void moveServo(int position){
+void RunServo(int position){
+
 // position is the desired angle should servo be after this fn is finished without errors
 if (wiringPiSetup () == -1) //using wPi pin numbering
 return;
@@ -10,4 +11,3 @@ pwmSetRange(1000); //range at 1000 ticks (20ms)
 pwmWrite(1, position);  
 return ;
 }
-
