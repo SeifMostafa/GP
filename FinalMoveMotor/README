@@ -1,6 +1,11 @@
 after researches we use stepper motor (nema 23 9kg/cm , 4 leads , 56mm square body, 1.8 step-angle)
 we use motor to turn the product into the customers who are detected by facedetection algorithm
 
+
+        this code use serial to read angles temp (to test) till binding and replace it with analogRead or 
+        maybe ignore arduino and run from pi and use shell sys to pass the angle from another file .
+        
+        
 motor algorithm :
 input : angle to turn into 
 output : run stepper motor into the exact angle in range 0-180 degree
