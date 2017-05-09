@@ -1,5 +1,5 @@
 #include "opencv2/objdetect/objdetect.hpp"
-//#include "opencv2/videoio.hpp"
+#include "opencv2/videoio.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
@@ -16,7 +16,9 @@ CascadeClassifier profileFace_cascade;
 String window_name = "Capture - Face detection";
 int main( void )
 {
-    Mat frame;
+    Mat frame1,frame2;
+    int width=640;
+    double FOV=180,dpp=FOV/((double)width);
     //-- 1. Load the cascades
     if( !body_cascade.load( body_cascade_name ) ){ printf("--(!)Error loading body cascade\n"); return -1; };
     if( !frontalFace_cascade.load( frontalFace_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
@@ -24,33 +26,27 @@ int main( void )
 
     VideoCapture capture;
     capture.open(0);
+    capture.open(1);
     while(1){
-		capture.read(frame);
+		capture.read(frame1);
+		capture.read(frame2);
+        int rows = max(frame1.rows, frame2.rows);
+        int cols = frame1.cols + frame2.cols;
+        Mat3b frame(rows, cols, Vec3b(0,0,0));
+        frame1.copyTo(frame(Rect(0, 0, frame1.cols, frame1.rows)));
+        frame2.copyTo(frame(Rect(frame1.cols, 0, frame2.cols, frame2.rows)));
+
         detectAndDisplay( frame );
         waitKey(250);
     }
     return 0;
 }
-
 void detectAndDisplay( Mat frame )
 {
     std::vector<Rect> bodies;
     Mat frame_gray=Mat::zeros( frame.size(), frame.type() );
-     /// Do the operation new_image(i,j) = alpha*image(i,j) + beta
-/* for( int y = 0; y < frame.rows; y++ )
-    { for( int x = 0; x < frame.cols; x++ )
-         { for( int c = 0; c < 3; c++ )
-              {
-      frame_gray.at<Vec3b>(y,x)[c] =
-         saturate_cast<uchar>( 2*( frame.at<Vec3b>(y,x)[c] ) +30 );
-             }
-    }
-    }
-    imshow("Modified",frame_gray);*/
     cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
-    //imshow("Modified_gray",frame_gray);
     equalizeHist( frame_gray, frame_gray );
-    //imshow("Modified_equalized",frame_gray);
 
     //-- Detect bodies
     body_cascade.detectMultiScale( frame_gray, bodies, 1.2, 4, 0|CASCADE_SCALE_IMAGE, Size(70, 300) );
@@ -69,6 +65,7 @@ void detectAndDisplay( Mat frame )
             Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
             int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
             circle( frame, face_center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
+            angle(face_center.x);
         }
         if(check){
         profileFace_cascade.detectMultiScale( faceROI, faces, 1.1, 6, 0 |CASCADE_SCALE_IMAGE, Size(10, 30) );
@@ -77,9 +74,13 @@ void detectAndDisplay( Mat frame )
             Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
             int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
             circle( frame, face_center, radius, Scalar( 255, 255, 0 ), 4, 8, 0 );
+            angle(face_center.x);
         }
         }
     }
     //-- Show what you got
     imshow( window_name, frame );
+}
+double angle(double x){
+return x*dpp;
 }
