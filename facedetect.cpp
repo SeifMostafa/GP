@@ -7,6 +7,7 @@
 using namespace std;
 using namespace cv;
 void detectAndDisplay( Mat frame );
+double angle(double x);
 String body_cascade_name = "haarcascade_mcs_upperbody.xml";
 String frontalFace_cascade_name = "haarcascade_frontalface_alt.xml";
 String profileFace_cascade_name ="haarcascade_profileface.xml";
@@ -14,22 +15,28 @@ CascadeClassifier body_cascade;
 CascadeClassifier frontalFace_cascade;
 CascadeClassifier profileFace_cascade;
 String window_name = "Capture - Face detection";
+   int width=640;
+    double FOV=180,dpp=FOV/((double)width);
 int main( void )
 {
     Mat frame1,frame2;
-    int width=640;
-    double FOV=180,dpp=FOV/((double)width);
+ 
     //-- 1. Load the cascades
     if( !body_cascade.load( body_cascade_name ) ){ printf("--(!)Error loading body cascade\n"); return -1; };
     if( !frontalFace_cascade.load( frontalFace_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
     if( !profileFace_cascade.load( profileFace_cascade_name ) ){ printf("--(!)Error loading face cascade\n"); return -1; };
 
     VideoCapture capture;
-    capture.open(0);
-    capture.open(1);
+
     while(1){
+    capture.open(0);
 		capture.read(frame1);
+capture.release();
+
+    capture.open(1);
 		capture.read(frame2);
+capture.release();
+	// binding 
         int rows = max(frame1.rows, frame2.rows);
         int cols = frame1.cols + frame2.cols;
         Mat3b frame(rows, cols, Vec3b(0,0,0));
@@ -53,7 +60,7 @@ void detectAndDisplay( Mat frame )
     for ( size_t i = 0; i < bodies.size(); i++ )
     {
         Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
-        ellipse( frame, center, Size( bodies[i].width/2, bodies[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
+       // ellipse( frame, center, Size( bodies[i].width/2, bodies[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
         Mat faceROI = frame_gray( bodies[i] );
         std::vector<Rect> faces;
         //-- In each body, detect faces
@@ -64,7 +71,7 @@ void detectAndDisplay( Mat frame )
             check=false;
             Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
             int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
-            circle( frame, face_center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
+          //  circle( frame, face_center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
             angle(face_center.x);
         }
         if(check){
@@ -73,7 +80,7 @@ void detectAndDisplay( Mat frame )
         {
             Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
             int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
-            circle( frame, face_center, radius, Scalar( 255, 255, 0 ), 4, 8, 0 );
+          //  circle( frame, face_center, radius, Scalar( 255, 255, 0 ), 4, 8, 0 );
             angle(face_center.x);
         }
         }

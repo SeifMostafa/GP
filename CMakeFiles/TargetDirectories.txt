@@ -1,0 +1,7 @@
+/home/pi/Documents/GP/CMakeFiles/edit_cache.dir
+/home/pi/Documents/GP/CMakeFiles/install/strip.dir
+/home/pi/Documents/GP/CMakeFiles/rebuild_cache.dir
+/home/pi/Documents/GP/CMakeFiles/list_install_components.dir
+/home/pi/Documents/GP/CMakeFiles/install.dir
+/home/pi/Documents/GP/CMakeFiles/install/local.dir
+/home/pi/Documents/GP/CMakeFiles/facedetect.dir
