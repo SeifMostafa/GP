@@ -1,5 +1,4 @@
 int stp =8,dir=9;
-int prev=0;
 // analog read angle
 int val;
 void setup()
@@ -36,23 +35,15 @@ void loop()
     String str = Serial.readStringUntil('\n');
     val = str.toInt();
     Serial.println(val);
-    val = val - prev;
-    int temp_prev = prev;
-    prev= prev+val;
     
     if(val<0){
       changeDirection();
       val=val*-1;
-
       run(val);
       changeDirection2();
-
     }
     else run(val);
-    
-    if(prev>180){
-      prev=prev-temp_prev;
-    }
+   
   }
 }
 
