@@ -14,7 +14,7 @@ String profileFace_cascade_name ="haarcascade_profileface.xml";
 CascadeClassifier body_cascade;
 CascadeClassifier frontalFace_cascade;
 CascadeClassifier profileFace_cascade;
-double angle2steps(double x);
+double angle(double x);
 String window_name = "Capture - Face detection";
 int width=640;
 double FOV=180,dpp=FOV/((double)width);
@@ -111,7 +111,7 @@ void detectAndDisplay( Mat frame )
             Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
             int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
             circle( frame, face_center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
-            angle2steps(face_center.x);
+            angle(face_center.x);
         }
         if(check)
         {
@@ -121,14 +121,14 @@ void detectAndDisplay( Mat frame )
                 Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
                 int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
                 circle( frame, face_center, radius, Scalar( 255, 255, 0 ), 4, 8, 0 );
-                angle2steps(face_center.x);
+                angle(face_center.x);
             }
         }
     }
     //-- Show what you got
     imshow( window_name, frame );
 }
-double angle2steps(double x)
+double angle(double x)
 {
     // read prev
     int prev = Dbrw::read();
