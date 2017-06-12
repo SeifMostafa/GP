@@ -9,6 +9,7 @@ void setup()
 
   ///temp to read various angles 
   Serial.begin(9600);  
+Serial.write('1');
 }
 
 void run(int angle){
@@ -31,15 +32,16 @@ void changeDirection2(){
 }
 void loop()
 {
-  if(Serial.available() > 0)
+
+  String str = Serial.readStringUntil('\n');
+  val = str.toInt();
+  if(val != 0)
   {
-    String str = Serial.readStringUntil('\n');
-    val = str.toInt();
     Serial.println(val);
     val = val - prev;
     int temp_prev = prev;
     prev= prev+val;
-    
+
     if(val<0){
       changeDirection();
       val=val*-1;
@@ -49,10 +51,11 @@ void loop()
 
     }
     else run(val);
-    
+
     if(prev>180){
       prev=prev-temp_prev;
     }
   }
 }
+
 

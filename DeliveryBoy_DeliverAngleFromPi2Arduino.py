@@ -1,16 +1,18 @@
 import time
+import sys
 import serial
+connected = False
+ser=serial.Serial("/dev/ttyUSB0",9600)
+while not connected:
+    serin = ser.read()
+    connected =True
 
-ser=serial.Serial(
 
-port='/dev/ttyUSB0',
-baudrate=9600,
-parity=serial.PARITY_NONE,
-stopbits=serial.STOPBITS_ONE,
-bytesize=serial.EIGHTBITS,
-timeout=1
-)
-counter="60"
+counter=""+ sys.argv[1]
 ser.write(counter)
 time.sleep(5)
+
+
+
+
 ser.close
