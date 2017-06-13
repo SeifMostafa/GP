@@ -3,6 +3,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <vector>
 using namespace std;
