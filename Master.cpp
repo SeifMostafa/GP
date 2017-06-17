@@ -113,14 +113,14 @@ public:
 void MoveMotor(double angle)
 {
     char str_angle[3];
-    char cmd []= "python DeliveryBoy_DeliverAngleFromPi2Arduino.py ";
+    char cmd []= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py ";
 
     stringstream ss;
     ss<<angle;
     ss>>str_angle;
     strcat(cmd,str_angle);
-    cout<<cmd<<endl;
-    /*  system(cmd);
+   // cout<<cmd<<endl;
+      system(cmd);
 
       // check reached
       bool reached=false;
@@ -132,17 +132,17 @@ void MoveMotor(double angle)
               Dbrw::ClearReached();
           }
       }
-      */
+     
 }
 void PlaySound()
 {
-//   system("python DeliveryBoy_DeliverAngleFromPi2Arduino.py ");
-    cout<<"DO U HEAR ME?!\n";
+   system("python /home/azizax/Documents/fci/GP/CODE/GP/playsound.py");
+//    cout<<"DO U HEAR ME?!\n";
 }
 int main()
 {
 
-    /*  if(ConfigFaceDetection()!=0)
+      if(ConfigFaceDetection()!=0)
           return 0 ;
       while(1)
       {
@@ -169,16 +169,16 @@ int main()
               waitKey(250);
           }
           /// calculate waited time
-          */
+          
     int TimeToWait =0;
     std::vector<double>WellSortedAnglesVector ;
     std::vector<double>InCurrent ;
 
-    AnglesVector.push_back(55.0);
+    /*AnglesVector.push_back(55.0);
     AnglesVector.push_back(22.0);
     AnglesVector.push_back(85.0);
     AnglesVector.push_back(160.0);
-    AnglesVector.push_back(35.0);
+    AnglesVector.push_back(35.0);*/
 
     ThresholdingGroupPeople(AnglesVector,InCurrent);
     WellSortedAnglesVector = SortAngles(AnglesVector);
@@ -189,7 +189,7 @@ int main()
     /// call motor , sound files
     ExeAngles(InCurrent,WellSortedAnglesVector);
 
-//}
+}
     return 0;
 }
 void ExeAnglesForInternalGroup(std::vector<double>Group)
