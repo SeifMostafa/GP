@@ -132,7 +132,7 @@ void MoveMotor(double angle)
               Dbrw::ClearReached();
           }
       }
-     
+
 }
 void PlaySound()
 {
@@ -169,7 +169,7 @@ int main()
               waitKey(250);
           }
           /// calculate waited time
-          
+
     int TimeToWait =0;
     std::vector<double>WellSortedAnglesVector ;
     std::vector<double>InCurrent ;
