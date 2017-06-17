@@ -112,13 +112,16 @@ public:
 };
 void MoveMotor(double angle)
 {
-    char str_angle[3];
+    char str_steps[3];
     char cmd []= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py ";
+    int steps =0;
+    int prev = Dbrw::ReadAngle();
+    steps = angle - prev;
 
     stringstream ss;
-    ss<<angle;
-    ss>>str_angle;
-    strcat(cmd,str_angle);
+    ss<<steps;
+    ss>>str_steps;
+    strcat(cmd,str_steps);
    // cout<<cmd<<endl;
       system(cmd);
 
@@ -132,7 +135,7 @@ void MoveMotor(double angle)
               Dbrw::ClearReached();
           }
       }
-
+    Dbrw::WriteAngle(angle);
 }
 void PlaySound()
 {
@@ -437,24 +440,5 @@ std::vector<double> RunFaceDetection(Mat frame)
 }
 double angle(double x)
 {
-    // read prev
-    int prev = Dbrw::ReadAngle();
-
-    int val = x*dpp - prev;
-
-    int temp_prev = prev;
-    prev= prev+val;
-
-    if(val<0)
-    {
-        val=val*-1;
-    }
-    if(prev>180)
-    {
-        prev=prev-temp_prev;
-        // write prev
-        Dbrw::WriteAngle(prev);
-
-    }
-    return val;
+ return x*dpp;
 }
