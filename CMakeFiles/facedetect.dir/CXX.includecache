@@ -6,16 +6,18 @@
 
 #IncludeRegexTransform: 
 
-/home/pi/Documents/GP/facedetect.cpp
+/home/pi/Documents/REPO/GP/facedetect.cpp
 opencv2/objdetect/objdetect.hpp
-/home/pi/Documents/GP/opencv2/objdetect/objdetect.hpp
+/home/pi/Documents/REPO/GP/opencv2/objdetect/objdetect.hpp
 opencv2/videoio.hpp
-/home/pi/Documents/GP/opencv2/videoio.hpp
+/home/pi/Documents/REPO/GP/opencv2/videoio.hpp
 opencv2/highgui/highgui.hpp
-/home/pi/Documents/GP/opencv2/highgui/highgui.hpp
+/home/pi/Documents/REPO/GP/opencv2/highgui/highgui.hpp
 opencv2/imgproc/imgproc.hpp
-/home/pi/Documents/GP/opencv2/imgproc/imgproc.hpp
+/home/pi/Documents/REPO/GP/opencv2/imgproc/imgproc.hpp
 iostream
+-
+fstream
 -
 stdio.h
 -
