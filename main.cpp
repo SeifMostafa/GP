@@ -8,7 +8,7 @@
 using namespace std;
 using namespace cv;
 std::vector<double> runDetection( Mat frame );
-double angle(double x);
+double angle(double x,bool flipped);
 String body_cascade_name = "haarcascade_mcs_upperbody.xml";
 String frontalFace_cascade_name = "haarcascade_frontalface_alt.xml";
 String profileFace_cascade_name ="haarcascade_profileface.xml";
@@ -92,7 +92,7 @@ std::vector<double> runDetection( Mat frame )
                     0, 0, 360, Scalar( 255,255,0 ), 4, 8, 0 );
             facesAngles.push_back(angle(center.x,0));
         }
-
+        Mat flip_frame_gray;
         flip(frame_gray,flip_frame_gray, 1);
         profileFace_cascade.detectMultiScale(flip_frame_gray, profile_faces_flip, 1.1,6,0|CASCADE_SCALE_IMAGE, Size(10, 30));
         cout <<" profile_faces_flip"<<profile_faces_flip.size()<<endl;
