@@ -1,5 +1,5 @@
 #include "opencv2/objdetect/objdetect.hpp"
-//#include "opencv2/videoio.hpp"
+#include "opencv2/videoio.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
@@ -17,7 +17,8 @@ using namespace cv;
 static const int ORG_SOUNDFILE_LENGTH = 5*1000000; // in microseconds
 static const int ANGLE_THRESHOL=10; // if two persons are in range of this threshold will meet them up and play the ad only one.
 
-std::vector<double> RunFaceDetection( Mat frame );
+std::vector<double> DetectFacesInFrame( Mat frame );
+Mat RunFaceDetection();
 std::vector<double> SortAngles(std::vector<double> AnglesVector);  // to get shortest and best path
 void ExeAngles(std::vector<double>InCurrent, std::vector<double>others);
 
@@ -112,87 +113,78 @@ public:
 };
 void MoveMotor(double angle)
 {
-    char str_steps[3];
-    char cmd []= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py ";
+    char str_steps[4];
+    char cmd [90]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py ";
     int steps =0;
     int prev = Dbrw::ReadAngle();
+    cout<<"Angle: " <<angle <<" prev: "<< prev<< endl;
     steps = angle - prev;
 
     stringstream ss;
     ss<<steps;
     ss>>str_steps;
     strcat(cmd,str_steps);
-   // cout<<cmd<<endl;
-      system(cmd);
+    cout<<cmd<<endl;
+    /*   system(cmd);
 
-      // check reached
-      bool reached=false;
-      while(!reached)
-      {
-          if(Dbrw::ReadReached()==1)
-          {
-              reached=true;
-              Dbrw::ClearReached();
-          }
-      }
-    Dbrw::WriteAngle(angle);
+       // check reached
+       bool reached=false;
+       while(!reached)
+       {
+           if(Dbrw::ReadReached()==1)
+           {
+               reached=true;
+               Dbrw::ClearReached();
+           }
+       }
+     Dbrw::WriteAngle(angle);
+     */
 }
 void PlaySound()
 {
-   system("python /home/azizax/Documents/fci/GP/CODE/GP/playsound.py");
-//    cout<<"DO U HEAR ME?!\n";
+//   system("python /home/azizax/Documents/fci/GP/CODE/GP/playsound.py");
+    cout<<"DO U HEAR ME?!\n";
 }
 int main()
 {
 
-      if(ConfigFaceDetection()!=0)
-          return 0 ;
-      while(1)
-      {
-          /// catch faces
-          while (!stopFaceDetection)
-          {
-              capture.open(0);
-              capture.read(frame1);
-              capture.release();
-              capture.open(1);
-              capture.read(frame2);
-              capture.release();
-              int rows = max(frame1.rows, frame2.rows);
-              int cols = frame1.cols + frame2.cols;
-              Mat3b frame(rows, cols, Vec3b(0,0,0));
-              frame1.copyTo(frame(Rect(0, 0, frame1.cols, frame1.rows)));
-              frame2.copyTo(frame(Rect(frame1.cols, 0, frame2.cols, frame2.rows)));
+    if(ConfigFaceDetection()!=0)
+        return 0 ;
+    while(1)
+    {
+        /// catch faces
+        while (!stopFaceDetection)
+        {
 
-              AnglesVector=  RunFaceDetection( frame );
-              if(AnglesVector.size()>0)
-              {
-                  stopFaceDetection= true;
-              }
-              waitKey(250);
-          }
-          /// calculate waited time
+            Mat frame = RunFaceDetection();
+            AnglesVector=  DetectFacesInFrame( frame );
+            if(AnglesVector.size()>0)
+            {
+                stopFaceDetection= true;
+            }
+            waitKey(250);
+        }
 
-    int TimeToWait =0;
-    std::vector<double>WellSortedAnglesVector ;
-    std::vector<double>InCurrent ;
+        /// sort faces
+        std::vector<double>WellSortedAnglesVector ;
+        std::vector<double>InCurrent ;
 
-    /*AnglesVector.push_back(55.0);
-    AnglesVector.push_back(22.0);
-    AnglesVector.push_back(85.0);
-    AnglesVector.push_back(160.0);
-    AnglesVector.push_back(35.0);*/
+        /*AnglesVector.push_back(55.0);
+        AnglesVector.push_back(22.0);
+        AnglesVector.push_back(85.0);
+        AnglesVector.push_back(160.0);
+        AnglesVector.push_back(35.0);*/
 
-    ThresholdingGroupPeople(AnglesVector,InCurrent);
-    WellSortedAnglesVector = SortAngles(AnglesVector);
+        ThresholdingGroupPeople(AnglesVector,InCurrent);
+        WellSortedAnglesVector = SortAngles(AnglesVector);
 
-    //printVector(InCurrent);
-   // printVector(WellSortedAnglesVector);
+        //printVector(InCurrent);
+        // printVector(WellSortedAnglesVector);
 
-    /// call motor , sound files
-    ExeAngles(InCurrent,WellSortedAnglesVector);
+        /// call motor , sound files
+        ExeAngles(InCurrent,WellSortedAnglesVector);
 
-}
+    }
     return 0;
 }
 void ExeAnglesForInternalGroup(std::vector<double>Group)
@@ -208,6 +200,14 @@ void ExeAnglesForInternalGroup(std::vector<double>Group)
         }
         usleep(PeriodAmongInCurrentMoves);
     }
+}
+bool CheckNextTripIsExis( std::vector<double> NewFaces, double NextTripAt)
+{
+    for(int i=0; i<NewFaces.size(); i++)
+    {
+        if(abs(NewFaces.at(i)-NextTripAt)<=ANGLE_THRESHOL)return true;
+    }
+    return false;
 }
 void ExeAngles(std::vector<double>InCurrent, std::vector<double>others)
 {
@@ -233,6 +233,10 @@ void ExeAngles(std::vector<double>InCurrent, std::vector<double>others)
         {
             ExeAnglesForInternalGroup(InternalGroup);
             InternalGroup.clear();
+            /// check next group is still exist or not !
+            Mat frame =  RunFaceDetection();
+            std::vector<double> NewFaces = DetectFacesInFrame(frame);
+            if(!CheckNextTripIsExis(NewFaces,others.at(i+1))) return;
         }
     }
     /// LAST ANGLE
@@ -242,13 +246,14 @@ void ExeAngles(std::vector<double>InCurrent, std::vector<double>others)
         InternalGroup.push_back(others.at(others.size()-1));
         ExeAnglesForInternalGroup(InternalGroup);
     }
+    stopFaceDetection= false;
 }
 std::vector<double> SortAngles(std::vector<double> AV)
 {
     std::vector<double>WellSortedAnglesVector;
     std::sort (AV.begin(), AV.end());
     int currentPosition = Dbrw::ReadAngle();
-     currentPosition = 80;
+    currentPosition = 80;
     //cout<<"currentPosition: "<< currentPosition<<endl;
 
     /// the current -- > min .. max
@@ -347,11 +352,11 @@ int ThresholdingGroupPeople(std::vector<double>&v,std::vector<double>&InCurrent)
     int TempEndOfPrevGroup=777;   /// to bind groups
 
     /// LAST ELEMENT
-     if(abs(v.at(v.size()-1)-currentPosition)<=ANGLE_THRESHOL)
-        {
-            InCurrent.push_back(v.at(v.size()-1));
-            remove(v,v.size()-1);
-        }
+    if(abs(v.at(v.size()-1)-currentPosition)<=ANGLE_THRESHOL)
+    {
+        InCurrent.push_back(v.at(v.size()-1));
+        remove(v,v.size()-1);
+    }
 
     for(int i=0; i<v.size()-1; i++)
     {
@@ -393,7 +398,7 @@ int ConfigFaceDetection( void )
 
     return 0;
 }
-std::vector<double> RunFaceDetection(Mat frame)
+std::vector<double> DetectFacesInFrame(Mat frame)
 {
     std::vector<Rect> bodies;
     Mat frame_gray=Mat::zeros( frame.size(), frame.type() );
@@ -438,7 +443,22 @@ std::vector<double> RunFaceDetection(Mat frame)
     imshow( window_name, frame );
     return facesAngles;
 }
+Mat RunFaceDetection()
+{
+    capture.open(0);
+    capture.read(frame1);
+    capture.release();
+    capture.open(1);
+    capture.read(frame2);
+    capture.release();
+    int rows = max(frame1.rows, frame2.rows);
+    int cols = frame1.cols + frame2.cols;
+    Mat3b frame(rows, cols, Vec3b(0,0,0));
+    frame1.copyTo(frame(Rect(0, 0, frame1.cols, frame1.rows)));
+    frame2.copyTo(frame(Rect(frame1.cols, 0, frame2.cols, frame2.rows)));
+    return frame;
+}
 double angle(double x)
 {
- return x*dpp;
+    return x*dpp;
 }
