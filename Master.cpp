@@ -23,8 +23,7 @@ std::vector<double> SortAngles(std::vector<double> AnglesVector);  // to get sho
 void ExeAngles(std::vector<double>InCurrent, std::vector<double>others);
 
 int ThresholdingGroupPeople(std::vector<double>&v,std::vector<double>&InCurrent);
-
-double angle(double x);
+double angle(double x,bool flipped);
 int ConfigFaceDetection( void );
 
 String body_cascade_name = "haarcascade_mcs_upperbody.xml";
@@ -35,8 +34,8 @@ CascadeClassifier frontalFace_cascade;
 CascadeClassifier profileFace_cascade;
 String window_name = "Capture - Face detection";
 
-int width=640;
-double FOV=180,dpp=FOV/((double)width);
+int width=1280;
+double FOV=154,dpp=FOV/((double)width);
 Mat frame1,frame2;
 
 
@@ -114,7 +113,7 @@ public:
 void MoveMotor(double angle)
 {
     char str_steps[4];
-    char cmd [90]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py ";
+    char cmd [91]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 91 is the total size of path
     int steps =0;
     int prev = Dbrw::ReadAngle();
     cout<<"Angle: " <<angle <<" prev: "<< prev<< endl;
@@ -220,31 +219,39 @@ void ExeAngles(std::vector<double>InCurrent, std::vector<double>others)
 
     std::vector<double>InternalGroup;
     int c=0;
-    for(int i=0; i<others.size()-1; i++)
+    if(others.size()>0)
     {
-        InternalGroup.push_back(others.at(i));
-        c++;
-        if(abs(others.at(i)-others.at(i+1))<=ANGLE_THRESHOL)
+
+        for(int i=0; i<others.size()-1; i++)
         {
-            InternalGroup.push_back(others.at(i+1));
+            InternalGroup.push_back(others.at(i));
             c++;
+            if(abs(others.at(i)-others.at(i+1))<=ANGLE_THRESHOL)
+            {
+                InternalGroup.push_back(others.at(i+1));
+                c++;
+            }
+            else
+            {
+                ExeAnglesForInternalGroup(InternalGroup);
+                InternalGroup.clear();
+                /// check next group is still exist or not !
+                Mat frame =  RunFaceDetection();
+                std::vector<double> NewFaces = DetectFacesInFrame(frame);
+                if(NewFaces.size()>0)
+                {
+
+                    if(!CheckNextTripIsExis(NewFaces,others.at(i+1))) return;
+                }
+            }
         }
-        else
+        /// LAST ANGLE
+        if(c<others.size())
         {
+            std::vector<double>InternalGroup;
+            InternalGroup.push_back(others.at(others.size()-1));
             ExeAnglesForInternalGroup(InternalGroup);
-            InternalGroup.clear();
-            /// check next group is still exist or not !
-            Mat frame =  RunFaceDetection();
-            std::vector<double> NewFaces = DetectFacesInFrame(frame);
-            if(!CheckNextTripIsExis(NewFaces,others.at(i+1))) return;
         }
-    }
-    /// LAST ANGLE
-    if(c<others.size())
-    {
-        std::vector<double>InternalGroup;
-        InternalGroup.push_back(others.at(others.size()-1));
-        ExeAnglesForInternalGroup(InternalGroup);
     }
     stopFaceDetection= false;
 }
@@ -255,76 +262,78 @@ std::vector<double> SortAngles(std::vector<double> AV)
     int currentPosition = Dbrw::ReadAngle();
     currentPosition = 80;
     //cout<<"currentPosition: "<< currentPosition<<endl;
-
-    /// the current -- > min .. max
-    if(AV.at(0)>currentPosition && AV.at(AV.size()-1)> currentPosition)
+    if(AV.size()>0)
     {
-        // cout<<"the current -- > min .. max\n";
-        std::copy(AV.begin(),AV.end(),std::back_inserter(WellSortedAnglesVector));
-    }
-    //  min .. max -- > current
 
-    else if(AV.at(0)< currentPosition && AV.at(AV.size()-1)< currentPosition)
-    {
-        //cout<<"min .. max -- > current\n";
-        std::copy(AV.end(),AV.begin(),std::back_inserter(WellSortedAnglesVector));
-    }
-    // min --> the current -- > max
-    else
-    {
-        // cout<<"min --> the current -- > max\n";
-        // SPLIT TWO VECTORS
-        std::vector<double> Bigger;
-        std::vector<double> Smaller;
-        for(int i=0; i<AV.size(); i++)
+        /// the current -- > min .. max
+        if(AV.at(0)>currentPosition && AV.at(AV.size()-1)> currentPosition)
         {
-            if(AV.at(i)>currentPosition)Bigger.push_back(AV.at(i));
-            else Smaller.push_back(AV.at(i));
+            // cout<<"the current -- > min .. max\n";
+            std::copy(AV.begin(),AV.end(),std::back_inserter(WellSortedAnglesVector));
         }
+        //  min .. max -- > current
 
-        int tripBigger = abs(Bigger.at(Bigger.size()-1) - currentPosition);
-        int tripSmaller = abs(Smaller.at(0) - currentPosition);
-        if(tripBigger>tripSmaller&&abs(Bigger.at(0)-currentPosition)>abs(Smaller.at(Smaller.size()-1)-currentPosition))
+        else if(AV.at(0)< currentPosition && AV.at(AV.size()-1)< currentPosition)
         {
-            // smaller first
-            // then bigger
-            //  cout<<"LEFT -> RIGHT1\n";
-            std::reverse(Smaller.begin(),Smaller.end());
-            std::copy(Smaller.begin(),Smaller.end(),std::back_inserter(WellSortedAnglesVector));
-            std::copy(Bigger.begin(),Bigger.end(),std::back_inserter(WellSortedAnglesVector));
+            //cout<<"min .. max -- > current\n";
+            std::copy(AV.end(),AV.begin(),std::back_inserter(WellSortedAnglesVector));
         }
-        else if(tripBigger<tripSmaller&&abs(Bigger.at(0)-currentPosition)<abs(Smaller.at(Smaller.size()-1)-currentPosition))
-        {
-            // bigger first
-            // then smaller
-            //  cout<<"RIGHT -> LEFT1\n";
-            std::copy(Bigger.begin(),Bigger.end(),std::back_inserter(WellSortedAnglesVector));
-            std::reverse(Smaller.begin(),Smaller.end());
-            std::copy(Smaller.begin(),Smaller.end(),std::back_inserter(WellSortedAnglesVector));
-        }
+        // min --> the current -- > max
         else
         {
-            if(tripBigger>tripSmaller)
+            // cout<<"min --> the current -- > max\n";
+            // SPLIT TWO VECTORS
+            std::vector<double> Bigger;
+            std::vector<double> Smaller;
+            for(int i=0; i<AV.size(); i++)
+            {
+                if(AV.at(i)>currentPosition)Bigger.push_back(AV.at(i));
+                else Smaller.push_back(AV.at(i));
+            }
+
+            int tripBigger = abs(Bigger.at(Bigger.size()-1) - currentPosition);
+            int tripSmaller = abs(Smaller.at(0) - currentPosition);
+            if(tripBigger>tripSmaller&&abs(Bigger.at(0)-currentPosition)>abs(Smaller.at(Smaller.size()-1)-currentPosition))
             {
                 // smaller first
                 // then bigger
-                //        cout<<"LEFT -> RIGHT2\n";
+                //  cout<<"LEFT -> RIGHT1\n";
                 std::reverse(Smaller.begin(),Smaller.end());
                 std::copy(Smaller.begin(),Smaller.end(),std::back_inserter(WellSortedAnglesVector));
                 std::copy(Bigger.begin(),Bigger.end(),std::back_inserter(WellSortedAnglesVector));
             }
-            else
+            else if(tripBigger<tripSmaller&&abs(Bigger.at(0)-currentPosition)<abs(Smaller.at(Smaller.size()-1)-currentPosition))
             {
                 // bigger first
                 // then smaller
-                //    cout<<"RIGHT -> LEFT2\n";
+                //  cout<<"RIGHT -> LEFT1\n";
                 std::copy(Bigger.begin(),Bigger.end(),std::back_inserter(WellSortedAnglesVector));
                 std::reverse(Smaller.begin(),Smaller.end());
                 std::copy(Smaller.begin(),Smaller.end(),std::back_inserter(WellSortedAnglesVector));
             }
+            else
+            {
+                if(tripBigger>tripSmaller)
+                {
+                    // smaller first
+                    // then bigger
+                    //        cout<<"LEFT -> RIGHT2\n";
+                    std::reverse(Smaller.begin(),Smaller.end());
+                    std::copy(Smaller.begin(),Smaller.end(),std::back_inserter(WellSortedAnglesVector));
+                    std::copy(Bigger.begin(),Bigger.end(),std::back_inserter(WellSortedAnglesVector));
+                }
+                else
+                {
+                    // bigger first
+                    // then smaller
+                    //    cout<<"RIGHT -> LEFT2\n";
+                    std::copy(Bigger.begin(),Bigger.end(),std::back_inserter(WellSortedAnglesVector));
+                    std::reverse(Smaller.begin(),Smaller.end());
+                    std::copy(Smaller.begin(),Smaller.end(),std::back_inserter(WellSortedAnglesVector));
+                }
+            }
         }
     }
-
     /*  for(int i=0; i<WellSortedAnglesVector.size(); i++)
       {
           cout<<WellSortedAnglesVector.at(i)<<endl;
@@ -352,25 +361,29 @@ int ThresholdingGroupPeople(std::vector<double>&v,std::vector<double>&InCurrent)
     int TempEndOfPrevGroup=777;   /// to bind groups
 
     /// LAST ELEMENT
-    if(abs(v.at(v.size()-1)-currentPosition)<=ANGLE_THRESHOL)
+    if(v.size()>0)
     {
-        InCurrent.push_back(v.at(v.size()-1));
-        remove(v,v.size()-1);
-    }
 
-    for(int i=0; i<v.size()-1; i++)
-    {
-        if(abs(v.at(i)-currentPosition)<=ANGLE_THRESHOL)
+        if(abs(v.at(v.size()-1)-currentPosition)<=ANGLE_THRESHOL)
         {
-            InCurrent.push_back(v.at(i));
-            remove(v,i);
+            InCurrent.push_back(v.at(v.size()-1));
+            remove(v,v.size()-1);
         }
-        else if(abs(v.at(i)-v.at(i+1))<=ANGLE_THRESHOL)
+
+        for(int i=0; i<v.size()-1; i++)
         {
-            if(TempEndOfPrevGroup!=i)
+            if(abs(v.at(i)-currentPosition)<=ANGLE_THRESHOL)
             {
-                groups++;
-                TempEndOfPrevGroup=i+1;
+                InCurrent.push_back(v.at(i));
+                remove(v,i);
+            }
+            else if(abs(v.at(i)-v.at(i+1))<=ANGLE_THRESHOL)
+            {
+                if(TempEndOfPrevGroup!=i)
+                {
+                    groups++;
+                    TempEndOfPrevGroup=i+1;
+                }
             }
         }
     }
@@ -398,54 +411,95 @@ int ConfigFaceDetection( void )
 
     return 0;
 }
-std::vector<double> DetectFacesInFrame(Mat frame)
+std::vector<double> DetectFacesInFrame( Mat frame )
 {
+    std::vector<Rect> faces;
+    std::vector<Rect> profile_faces;
     std::vector<Rect> bodies;
+    std::vector<Rect> profile_faces_flip;
+    std::vector<double>facesAngles;
+
     Mat frame_gray=Mat::zeros( frame.size(), frame.type() );
     cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
     equalizeHist( frame_gray, frame_gray );
-    std::vector<double>facesAngles;
-    //-- Detect bodies
-    body_cascade.detectMultiScale( frame_gray, bodies, 1.1, 4, 0|CASCADE_SCALE_IMAGE, Size(40,60) );
-    for ( size_t i = 0; i < bodies.size(); i++ )
+    // Detect faces
+    frontalFace_cascade.detectMultiScale(frame_gray, faces, 1.2, 3,0|CASCADE_SCALE_IMAGE, Size(30, 30));
+
+    // Iterate over all of the faces
+    size_t s=0;
+
+    if(faces.size()!=s)
     {
-        Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
-        ellipse( frame, center, Size( bodies[i].width/2, bodies[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
-        Mat faceROI = frame_gray( bodies[i] );
-        std::vector<Rect> faces;
-        facesAngles.push_back(angle(center.x));
-        //-- In each body, detect faces
-        bool check=true;
-        frontalFace_cascade.detectMultiScale( faceROI, faces, 1.1, 2, 0 |CASCADE_SCALE_IMAGE, Size(10, 30) );
-        if(faces.size()>0) facesAngles.pop_back();
+        cout<<" frontal = "<<faces.size()<<endl;
         for ( size_t j = 0; j < faces.size(); j++ )
         {
-            check=false;
-            Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
-            int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
-            circle( frame, face_center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
-            facesAngles.push_back(angle(face_center.x));
-        }
-        if(check)
-        {
-            profileFace_cascade.detectMultiScale( faceROI, faces, 1.1, 6, 0 |CASCADE_SCALE_IMAGE, Size(10, 30) );
-            if(faces.size()>0) facesAngles.pop_back();
-            for ( size_t j = 0; j < faces.size(); j++ )
-            {
-                Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
-                int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
-                circle( frame, face_center, radius, Scalar( 255, 255, 0 ), 4, 8, 0 );
-                facesAngles.push_back(angle(face_center.x));
-            }
+            Point center( faces[j].x + faces[j].width/2, faces[j].y + faces[j].height/2 );
+            //int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
+            ellipse( frame, center, Size(faces[j].width/2, faces[j].height/2),0,0,360, Scalar( 255,0,255 ), 4, 8, 0 );
+            facesAngles.push_back(angle(center.x,0));
+            cout << angle(center.x,1) << endl;
+
         }
     }
-    //-- Show what you got
+    if(faces.size()==s)
+    {
+        profileFace_cascade.detectMultiScale(frame_gray, profile_faces, 1.1,6,0|CASCADE_SCALE_IMAGE, Size(10, 30));
+        cout <<" profile faces"<<profile_faces.size()<<endl;
+        // cout <<"frontal "<<faces.size()<<endl;
+
+        for( size_t i = 0; i < profile_faces.size(); i++ )
+        {
+            // Find center of faces
+            Point center(profile_faces[i].x +profile_faces[i].width/2, profile_faces[i].y + profile_faces[i].height/2);
+            ellipse(frame, center, Size(profile_faces[i].width/2, profile_faces[i].height/2),
+                    0, 0, 360, Scalar( 255,255,0 ), 4, 8, 0 );
+            facesAngles.push_back(angle(center.x,0));
+            cout << angle(center.x,1) << endl;
+
+        }
+        Mat flip_frame_gray;
+        flip(frame_gray,flip_frame_gray, 1);
+        profileFace_cascade.detectMultiScale(flip_frame_gray, profile_faces_flip, 1.1,6,0|CASCADE_SCALE_IMAGE, Size(10, 30));
+        cout <<" profile_faces_flip"<<profile_faces_flip.size()<<endl;
+        // cout <<"frontal "<<faces.size()<<endl;
+
+        for( size_t i = 0; i < profile_faces_flip.size(); i++ )
+        {
+            // Find center of faces
+            Point center(profile_faces_flip[i].x +profile_faces_flip[i].width/2, profile_faces_flip[i].y + profile_faces_flip[i].height/2);
+            ellipse(frame, center, Size(profile_faces_flip[i].width/2, profile_faces_flip[i].height/2),
+                    0, 0, 360, Scalar( 255,0,0 ), 4, 8, 0 );
+            facesAngles.push_back(angle(center.x,1));
+            cout << angle(center.x,1) << endl;
+        }
+
+    }
+    if(faces.size()==s&&profile_faces.size()==s)
+    {
+        body_cascade.detectMultiScale( frame_gray, bodies, 1.1,6, 0|CASCADE_SCALE_IMAGE, Size(50, 50) );
+        cout<<" bodies " <<bodies.size();
+        for ( size_t i = 0; i< bodies.size(); i++ )
+        {
+            Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
+            ellipse( frame, center, Size( bodies[i].width/2, bodies[i].height/2 ), 0, 0, 360, Scalar( 0,255, 255 ), 4, 8, 0 );
+            facesAngles.push_back(angle(center.x,0));
+            cout << angle(center.x,1) << endl;
+
+        }
+    }
+    // Show what you got
     imshow( window_name, frame );
     return facesAngles;
 }
+double angle(double x,bool flipped)
+{
+    int positionAngle = x*dpp;
+    if(flipped) positionAngle=154-positionAngle; //154 is the whole field of view it may differ
+    return positionAngle;
+}
 Mat RunFaceDetection()
 {
-    capture.open(0);
+    capture.open(2);
     capture.read(frame1);
     capture.release();
     capture.open(1);
@@ -458,7 +512,4 @@ Mat RunFaceDetection()
     frame2.copyTo(frame(Rect(frame1.cols, 0, frame2.cols, frame2.rows)));
     return frame;
 }
-double angle(double x)
-{
-    return x*dpp;
-}
+

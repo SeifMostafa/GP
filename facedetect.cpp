@@ -7,17 +7,17 @@
 #include <stdio.h>
 using namespace std;
 using namespace cv;
-void detectAndDisplay( Mat frame );
+std::vector<double> runDetection( Mat frame );
 String body_cascade_name = "haarcascade_mcs_upperbody.xml";
 String frontalFace_cascade_name = "haarcascade_frontalface_alt.xml";
 String profileFace_cascade_name ="haarcascade_profileface.xml";
 CascadeClassifier body_cascade;
 CascadeClassifier frontalFace_cascade;
 CascadeClassifier profileFace_cascade;
-double angle(double x);
+double angle(double x,bool flipped);
 String window_name = "Capture - Face detection";
-int width=640;
-double FOV=180,dpp=FOV/((double)width);
+int width=1280;
+double FOV=154,dpp=FOV/((double)width);
 class Dbrw
 {
 public:
@@ -69,10 +69,10 @@ int main( void )
      };
 
      VideoCapture capture;
- 
+
      while(1)
      {
-             capture.open(0);
+             capture.open(2);
 		capture.read(frame1);
    	  capture.open(1);
          capture.read(frame2);
@@ -82,73 +82,95 @@ int main( void )
          frame1.copyTo(frame(Rect(0, 0, frame1.cols, frame1.rows)));
          frame2.copyTo(frame(Rect(frame1.cols, 0, frame2.cols, frame2.rows)));
 
-         detectAndDisplay( frame );
+         runDetection( frame );
          waitKey(250);
      }
      return 0;
 
 }
-void detectAndDisplay( Mat frame )
+std::vector<double> runDetection( Mat frame )
 {
+    std::vector<Rect> faces;
+    std::vector<Rect> profile_faces;
     std::vector<Rect> bodies;
+    std::vector<Rect> profile_faces_flip;
+    std::vector<double>facesAngles;
+
     Mat frame_gray=Mat::zeros( frame.size(), frame.type() );
     cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
     equalizeHist( frame_gray, frame_gray );
+    // Detect faces
+    frontalFace_cascade.detectMultiScale(frame_gray, faces, 1.2, 3,0|CASCADE_SCALE_IMAGE, Size(30, 30));
 
-    //-- Detect bodies
-    body_cascade.detectMultiScale( frame_gray, bodies, 1.2, 4, 0|CASCADE_SCALE_IMAGE, Size(70, 300) );
-    for ( size_t i = 0; i < bodies.size(); i++ )
+    // Iterate over all of the faces
+    size_t s=0;
+
+    if(faces.size()!=s)
     {
-        Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
-        ellipse( frame, center, Size( bodies[i].width/2, bodies[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
-        Mat faceROI = frame_gray( bodies[i] );
-        std::vector<Rect> faces;
-        //-- In each body, detect faces
-        bool check=true;
-        frontalFace_cascade.detectMultiScale( faceROI, faces, 1.1, 2, 0 |CASCADE_SCALE_IMAGE, Size(10, 30) );
+        cout<<" frontal = "<<faces.size()<<endl;
         for ( size_t j = 0; j < faces.size(); j++ )
         {
-            check=false;
-            Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
-            int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
-            circle( frame, face_center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
-            angle(face_center.x);
+            Point center( faces[j].x + faces[j].width/2, faces[j].y + faces[j].height/2 );
+            //int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
+            ellipse( frame, center, Size(faces[j].width/2, faces[j].height/2),0,0,360, Scalar( 255,0,255 ), 4, 8, 0 );
+            facesAngles.push_back(angle(center.x,0));
+                        cout << angle(center.x,1) << endl;
+
         }
-        if(check)
+    }
+    if(faces.size()==s)
+    {
+        profileFace_cascade.detectMultiScale(frame_gray, profile_faces, 1.1,6,0|CASCADE_SCALE_IMAGE, Size(10, 30));
+        cout <<" profile faces"<<profile_faces.size()<<endl;
+        // cout <<"frontal "<<faces.size()<<endl;
+
+        for( size_t i = 0; i < profile_faces.size(); i++ )
         {
-            profileFace_cascade.detectMultiScale( faceROI, faces, 1.1, 6, 0 |CASCADE_SCALE_IMAGE, Size(10, 30) );
-            for ( size_t j = 0; j < faces.size(); j++ )
-            {
-                Point face_center( bodies[i].x + faces[j].x + faces[j].width/2, bodies[i].y + faces[j].y + faces[j].height/2 );
-                int radius = cvRound( (faces[j].width + faces[j].height)*0.25 );
-                circle( frame, face_center, radius, Scalar( 255, 255, 0 ), 4, 8, 0 );
-                angle(face_center.x);
-            }
+            // Find center of faces
+            Point center(profile_faces[i].x +profile_faces[i].width/2, profile_faces[i].y + profile_faces[i].height/2);
+            ellipse(frame, center, Size(profile_faces[i].width/2, profile_faces[i].height/2),
+                    0, 0, 360, Scalar( 255,255,0 ), 4, 8, 0 );
+            facesAngles.push_back(angle(center.x,0));
+                        cout << angle(center.x,1) << endl;
+
+        }
+        Mat flip_frame_gray;
+        flip(frame_gray,flip_frame_gray, 1);
+        profileFace_cascade.detectMultiScale(flip_frame_gray, profile_faces_flip, 1.1,6,0|CASCADE_SCALE_IMAGE, Size(10, 30));
+        cout <<" profile_faces_flip"<<profile_faces_flip.size()<<endl;
+        // cout <<"frontal "<<faces.size()<<endl;
+
+        for( size_t i = 0; i < profile_faces_flip.size(); i++ )
+        {
+            // Find center of faces
+            Point center(profile_faces_flip[i].x +profile_faces_flip[i].width/2, profile_faces_flip[i].y + profile_faces_flip[i].height/2);
+            ellipse(frame, center, Size(profile_faces_flip[i].width/2, profile_faces_flip[i].height/2),
+                    0, 0, 360, Scalar( 255,0,0 ), 4, 8, 0 );
+            facesAngles.push_back(angle(center.x,1));
+            cout << angle(center.x,1) << endl;
+        }
+
+    }
+    if(faces.size()==s&&profile_faces.size()==s)
+    {
+        body_cascade.detectMultiScale( frame_gray, bodies, 1.1,6, 0|CASCADE_SCALE_IMAGE, Size(50, 50) );
+        cout<<" bodies " <<bodies.size();
+        for ( size_t i = 0; i< bodies.size(); i++ )
+        {
+            Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
+            ellipse( frame, center, Size( bodies[i].width/2, bodies[i].height/2 ), 0, 0, 360, Scalar( 0,255, 255 ), 4, 8, 0 );
+            facesAngles.push_back(angle(center.x,0));
+                        cout << angle(center.x,1) << endl;
+
         }
     }
-    //-- Show what you got
+    // Show what you got
     imshow( window_name, frame );
+    return facesAngles;
 }
-double angle(double x)
+double angle(double x,bool flipped)
 {
-    // read prev
-    int prev = Dbrw::read();
-
-    int val = x*dpp - prev;
-
-    int temp_prev = prev;
-    prev= prev+val;
-
-    if(val<0)
-    {
-        val=val*-1;
-    }
-    if(prev>180)
-    {
-        prev=prev-temp_prev;
-        // write prev
-        Dbrw::write(prev);
-
-    }
-    return val;
+    int positionAngle = x*dpp;
+    if(flipped) positionAngle=154-positionAngle; //154 is the whole field of view it may differ
+    return positionAngle;
 }
