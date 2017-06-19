@@ -11,6 +11,7 @@
 #include <vector>
 #include <string.h>
 #include <unistd.h>
+#include <exception>
 using namespace std;
 using namespace cv;
 
@@ -46,16 +47,32 @@ VideoCapture capture;
 
 void remove(std::vector<double>& vec, size_t pos)
 {
-    std::vector<double>::iterator it = vec.begin();
-    std::advance(it, pos);
-    vec.erase(it);
+    try
+    {
+        std::vector<double>::iterator it = vec.begin();
+        std::advance(it, pos);
+        vec.erase(it);
+    }
+    catch(std::exception  const &exc)
+    {
+        std::cerr <<"Remove from vector: "<< exc.what()<<endl;
+    }
+
 }
 void printVector(std::vector<double> vec)
 {
-    for (int i = 0; i < vec.size(); i++)
-        cout << vec.at(i) <<" ";
+    try
+    {
+        for (int i = 0; i < vec.size(); i++)
+            cout << vec.at(i) <<" ";
 
-    cout<<endl;
+        cout<<endl;
+    }
+    catch(std::exception  const &exc)
+    {
+        std::cerr<<"Print vector: "<<exc.what()<<endl;
+    }
+
 }
 
 class Dbrw
@@ -63,128 +80,217 @@ class Dbrw
 public:
     static void WriteAngle(double angle)
     {
-        ofstream outfile;
-        outfile.open("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",ios::out | ios::trunc );
-        outfile<<angle<<endl;
-        outfile.close();
+        try
+        {
+            ofstream outfile;
+            outfile.open("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",ios::out | ios::trunc );
+            outfile<<angle<<endl;
+            outfile.close();
+        }
+        catch(std::exception  const &exc)
+        {
+            std::cerr<<"WriteAngle into file: "<<exc.what()<<endl;
+        }
     };
     static  double ReadAngle()
     {
-        ifstream infile;
-        infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",  ios::out | ios::in );
-        string buffer="";
-        while (infile.good())
+        try
         {
-            // cout<<(char) infile.get();
-            buffer+=(char) infile.get();
+            ifstream infile;
+            infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",  ios::out | ios::in );
+            string buffer="";
+            while (infile.good())
+            {
+                // cout<<(char) infile.get();
+                buffer+=(char) infile.get();
+            }
+            stringstream ss;
+            double result;
+            ss<<buffer;
+            ss>>result;
+            infile.close();
+            return result;
         }
-        stringstream ss;
-        double result;
-        ss<<buffer;
-        ss>>result;
-        infile.close();
-        return result;
+        catch(std::exception  const &exc)
+        {
+            std::cerr<<"ReadAngle from file: "<<exc.what()<<endl;
+        }
     };
     static int ReadReached()
     {
-        ifstream infile;
-        infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/reached",  ios::out | ios::in );
-        string buffer="";
-        while (infile.good())
+        try
         {
-            // cout<<(char) infile.get();
-            buffer+=(char) infile.get();
+
+            ifstream infile;
+            infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/reached",  ios::out | ios::in );
+            string buffer="";
+            while (infile.good())
+            {
+                // cout<<(char) infile.get();
+                buffer+=(char) infile.get();
+            }
+            stringstream ss;
+            int result;
+            ss<<buffer;
+            ss>>result;
+            infile.close();
+            return result;
         }
-        stringstream ss;
-        int result;
-        ss<<buffer;
-        ss>>result;
-        infile.close();
-        return result;
+        catch(std::exception  const &exc)
+        {
+            std::cerr<<"Read Reached from file: "<<exc.what()<<endl;
+        }
     }
     static int ClearReached()
     {
-        std::ofstream ofs;
-        ofs.open("/home/azizax/Documents/fci/GP/CODE/GP/reached", std::ofstream::out | std::ofstream::trunc);
-        ofs.close();
+        try
+        {
+            std::ofstream ofs;
+            ofs.open("/home/azizax/Documents/fci/GP/CODE/GP/reached", std::ofstream::out | std::ofstream::trunc);
+            ofs.close();
+        }
+        catch(std::exception  const &exc)
+        {
+            std::cerr<<"Clear Reached file: "<<exc.what()<<endl;
+        }
     }
 
 };
 void MoveMotor(double angle)
 {
-    char str_steps[4];
-    char cmd [91]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 91 is the total size of path
-    int steps =0;
-    int prev = Dbrw::ReadAngle();
-    cout<<"Angle: " <<angle <<" prev: "<< prev<< endl;
-    steps = angle - prev;
+    try
+    {
 
-    stringstream ss;
-    ss<<steps;
-    ss>>str_steps;
-    strcat(cmd,str_steps);
-    cout<<cmd<<endl;
-    /*   system(cmd);
+        char str_steps[4];
+        char cmd [91]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 91 is the total size of path
+        int steps =0;
+        int prev = Dbrw::ReadAngle();
+        cout<<"Angle: " <<angle <<" prev: "<< prev<< endl;
+        steps = angle - prev;
 
-       // check reached
-       bool reached=false;
-       while(!reached)
-       {
-           if(Dbrw::ReadReached()==1)
+        stringstream ss;
+        ss<<steps;
+        ss>>str_steps;
+        strcat(cmd,str_steps);
+        cout<<cmd<<endl;
+        /*   system(cmd);
+
+           // check reached
+           bool reached=false;
+           while(!reached)
            {
-               reached=true;
-               Dbrw::ClearReached();
+               if(Dbrw::ReadReached()==1)
+               {
+                   reached=true;
+                   Dbrw::ClearReached();
+               }
            }
-       }
-     Dbrw::WriteAngle(angle);
-     */
+         Dbrw::WriteAngle(angle);
+         */
+    }
+    catch(std::exception  const &exc)
+    {
+        cerr<<"MoveMotor: "<<exc.what()<<endl;
+    }
 }
 void PlaySound()
 {
+    try
+    {
+
 //   system("python /home/azizax/Documents/fci/GP/CODE/GP/playsound.py");
-    cout<<"DO U HEAR ME?!\n";
+        cout<<"DO U HEAR ME?!\n";
+    }
+    catch(std::exception  const &exc)
+    {
+        cerr<<"PlaySound: "<<exc.what()<<endl;
+    }
 }
 int main()
 {
-
-    if(ConfigFaceDetection()!=0)
-        return 0 ;
-    while(1)
+    try
     {
-        /// catch faces
-        while (!stopFaceDetection)
-        {
-
-            Mat frame = RunFaceDetection();
-            AnglesVector=  DetectFacesInFrame( frame );
-            if(AnglesVector.size()>0)
-            {
-                stopFaceDetection= true;
-            }
-            waitKey(250);
-        }
-
-        /// sort faces
         std::vector<double>WellSortedAnglesVector ;
         std::vector<double>InCurrent ;
+        try
+        {
 
-        /*AnglesVector.push_back(55.0);
-        AnglesVector.push_back(22.0);
-        AnglesVector.push_back(85.0);
-        AnglesVector.push_back(160.0);
-        AnglesVector.push_back(35.0);*/
+            if(ConfigFaceDetection()!=0)
+                return 0 ;
+        }
+        catch(std::exception  const &exc)
+        {
+            cerr<<"ConfigFaceDetection from Main: "<<exc.what()<<endl;
+        }
+        while(1)
+        {
+            /// catch faces
+            try
+            {
 
-        ThresholdingGroupPeople(AnglesVector,InCurrent);
-        WellSortedAnglesVector = SortAngles(AnglesVector);
+                while (!stopFaceDetection)
+                {
 
-        //printVector(InCurrent);
-        // printVector(WellSortedAnglesVector);
+                    Mat frame = RunFaceDetection();
+                    AnglesVector=  DetectFacesInFrame( frame );
+                    if(AnglesVector.size()>0)
+                    {
+                        stopFaceDetection= true;
+                    }
+                    waitKey(250);
+                }
+            }
+            catch(std::exception  const &exc)
+            {
+                cerr<<"while FaceDetection from Main: "<<exc.what()<<endl;
+            }
+            /// sort faces
+            try
+            {
 
-        /// call motor , sound files
-        ExeAngles(InCurrent,WellSortedAnglesVector);
 
+
+                /*AnglesVector.push_back(55.0);
+                AnglesVector.push_back(22.0);
+                AnglesVector.push_back(85.0);
+                AnglesVector.push_back(160.0);
+                AnglesVector.push_back(35.0);*/
+
+                ThresholdingGroupPeople(AnglesVector,InCurrent);
+            }
+            catch(std::exception  const &exc)
+            {
+                cerr<<"ThresholdingGroupPeople from Main: "<<exc.what()<<endl;
+            }
+
+            try
+            {
+                WellSortedAnglesVector = SortAngles(AnglesVector);
+            }
+            catch(std::exception  const &exc)
+            {
+                cerr<<"WellSortedAnglesVector - sortAngles from Main: "<<endl;
+            }
+            //printVector(InCurrent);
+            // printVector(WellSortedAnglesVector);
+
+            /// call motor , sound files
+            try
+            {
+                ExeAngles(InCurrent,WellSortedAnglesVector);
+            }
+            catch(std::exception  const &exc)
+            {
+                cerr<<"ExeAngles from Main: "<<exc.what()<<endl;
+            }
+
+        }
+        return 0;
     }
-    return 0;
+    catch(std::exception  const &exc)
+    {
+        cerr<<"PROGRAM: "<<exc.what()<<endl;
+    }
 }
 void ExeAnglesForInternalGroup(std::vector<double>Group)
 {
@@ -344,50 +450,61 @@ std::vector<double> SortAngles(std::vector<double> AV)
 }
 int ThresholdingGroupPeople(std::vector<double>&v,std::vector<double>&InCurrent)
 {
-    std::sort (v.begin(), v.end());
-    int currentPosition = Dbrw::ReadAngle();
-    currentPosition = 80;
-    /**
-        groups:  may contain 1-v.size() people
-        best case == ruch , people stand front of the product
-        and the distance among them <10degrees
-        worst case == singles around the product
-
-        result will contain org vector
-        After removing the current position and in range with
-    **/
-
-    int groups=0;
-    int TempEndOfPrevGroup=777;   /// to bind groups
-
-    /// LAST ELEMENT
-    if(v.size()>0)
+    try
     {
-
-        if(abs(v.at(v.size()-1)-currentPosition)<=ANGLE_THRESHOL)
+        if(v.size()>1)
         {
-            InCurrent.push_back(v.at(v.size()-1));
-            remove(v,v.size()-1);
-        }
 
-        for(int i=0; i<v.size()-1; i++)
-        {
-            if(abs(v.at(i)-currentPosition)<=ANGLE_THRESHOL)
+            std::sort (v.begin(), v.end());
+            int currentPosition = Dbrw::ReadAngle();
+            currentPosition = 80;
+            /**
+                groups:  may contain 1-v.size() people
+                best case == ruch , people stand front of the product
+                and the distance among them <10degrees
+                worst case == singles around the product
+
+                result will contain org vector
+                After removing the current position and in range with
+            **/
+
+            int groups=0;
+            int TempEndOfPrevGroup=777;   /// to bind groups
+
+            /// LAST ELEMENT
+
+
+            if(abs(v.at(v.size()-1)-currentPosition)<=ANGLE_THRESHOL)
             {
-                InCurrent.push_back(v.at(i));
-                remove(v,i);
+                InCurrent.push_back(v.at(v.size()-1));
+                remove(v,v.size()-1);
             }
-            else if(abs(v.at(i)-v.at(i+1))<=ANGLE_THRESHOL)
+
+            for(int i=0; i<v.size()-1; i++)
             {
-                if(TempEndOfPrevGroup!=i)
+                if(abs(v.at(i)-currentPosition)<=ANGLE_THRESHOL)
                 {
-                    groups++;
-                    TempEndOfPrevGroup=i+1;
+                    InCurrent.push_back(v.at(i));
+                    remove(v,i);
+                }
+                else if(abs(v.at(i)-v.at(i+1))<=ANGLE_THRESHOL)
+                {
+                    if(TempEndOfPrevGroup!=i)
+                    {
+                        groups++;
+                        TempEndOfPrevGroup=i+1;
+                    }
                 }
             }
+            if(v.size()==groups) return 1;
+            else return v.size()-groups;
         }
+        else return 1;
     }
-    return v.size()-groups;
+    catch(std::exception  const &exc)
+    {
+        cerr<<" //////////// ThresholdingGroupPeople: "<< exc.what()<<endl;
+    }
 }
 int ConfigFaceDetection( void )
 {
