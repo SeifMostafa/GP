@@ -17,7 +17,7 @@ time.sleep(5)
 while not arrived:
     serin = ser.read()
     if serin == "$":
-        file = open("/home/pi/Documents/REPO/GP/Arrived.txt","w")
+        file = open("/home/pi/Documents/REPO/GP/reached","w")
         file.write("1")
         file.close()
         arrived =True

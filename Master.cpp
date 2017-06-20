@@ -105,7 +105,7 @@ public:
                 buffer+=(char) infile.get();
             }
             stringstream ss;
-            double result;
+            double result="9999";
             ss<<buffer;
             ss>>result;
             infile.close();
@@ -594,7 +594,7 @@ std::vector<double> DetectFacesInFrame( Mat frame )
     if(faces.size()==s&&profile_faces.size()==s)
     {
         body_cascade.detectMultiScale( frame_gray, bodies, 1.1,6, 0|CASCADE_SCALE_IMAGE, Size(50, 50) );
-        cout<<" bodies " <<bodies.size();
+        cout<<" bodies " << bodies.size() <<endl;
         for ( size_t i = 0; i< bodies.size(); i++ )
         {
             Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
@@ -616,7 +616,7 @@ double angle(double x,bool flipped)
 }
 Mat RunFaceDetection()
 {
-    capture.open(2);
+    capture.open(0);
     capture.read(frame1);
     capture.release();
     capture.open(1);
