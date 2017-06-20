@@ -2,9 +2,10 @@ import RPi.GPIO as GPIO
 import time
 import os
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(17, GPIO.IN,pull_up_down=GPIO.PUD_UP)
+GPIO.setup(18, GPIO.IN,pull_up_down=GPIO.PUD_UP)
 while True:
-    if GPIO.input(17):
+	state = GPIO.input(18)
+    if state == False:
         os.system("sudo shutdown -h now")
-    prev_input = input
+    prev_state = state
     time.sleep(0.10)
