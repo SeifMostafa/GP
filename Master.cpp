@@ -83,7 +83,8 @@ public:
         try
         {
             ofstream outfile;
-            outfile.open("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",ios::out | ios::trunc );
+            //outfile.open("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",ios::out | ios::trunc );
+            outfile.open("/home/pi/Documents/REPO/GP/dbrw",ios::out | ios::trunc );
             outfile<<angle<<endl;
             outfile.close();
         }
@@ -97,7 +98,8 @@ public:
         try
         {
             ifstream infile;
-            infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",  ios::out | ios::in );
+           // infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",  ios::out | ios::in );
+            infile.open ("/home/pi/Documents/REPO/GP/dbrw",  ios::out | ios::in );
             string buffer="";
             while (infile.good())
             {
@@ -105,7 +107,7 @@ public:
                 buffer+=(char) infile.get();
             }
             stringstream ss;
-            double result="9999";
+            double result;
             ss<<buffer;
             ss>>result;
             infile.close();
@@ -122,7 +124,8 @@ public:
         {
 
             ifstream infile;
-            infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/reached",  ios::out | ios::in );
+            //infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/reached",  ios::out | ios::in );
+            infile.open ("/home/pi/Documents/REPO/GP/reached",  ios::out | ios::in );
             string buffer="";
             while (infile.good())
             {
@@ -146,7 +149,8 @@ public:
         try
         {
             std::ofstream ofs;
-            ofs.open("/home/azizax/Documents/fci/GP/CODE/GP/reached", std::ofstream::out | std::ofstream::trunc);
+           // ofs.open("/home/azizax/Documents/fci/GP/CODE/GP/reached", std::ofstream::out | std::ofstream::trunc);
+            ofs.open("/home/pi/Documents/REPO/GP/reached", std::ofstream::out | std::ofstream::trunc);
             ofs.close();
         }
         catch(std::exception  const &exc)
@@ -162,7 +166,8 @@ void MoveMotor(double angle)
     {
 
         char str_steps[4];
-        char cmd [91]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 91 is the total size of path
+       // char cmd [91]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 91 is the total size of path
+        char cmd [80]= "python /home/pi/Documents/REPO/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 80 is the total size of path
         int steps =0;
         int prev = Dbrw::ReadAngle();
         cout<<"Angle: " <<angle <<" prev: "<< prev<< endl;
@@ -173,7 +178,7 @@ void MoveMotor(double angle)
         ss>>str_steps;
         strcat(cmd,str_steps);
         cout<<cmd<<endl;
-        /*   system(cmd);
+           system(cmd);
 
            // check reached
            bool reached=false;
@@ -186,7 +191,7 @@ void MoveMotor(double angle)
                }
            }
          Dbrw::WriteAngle(angle);
-         */
+
     }
     catch(std::exception  const &exc)
     {
@@ -198,7 +203,9 @@ void PlaySound()
     try
     {
 
-//   system("python /home/azizax/Documents/fci/GP/CODE/GP/playsound.py");
+    //system("python /home/azizax/Documents/fci/GP/CODE/GP/playsound.py");
+      system("/home/pi/Documents/REPO/GP/playsound.py");
+
         cout<<"DO U HEAR ME?!\n";
     }
     catch(std::exception  const &exc)
@@ -594,7 +601,7 @@ std::vector<double> DetectFacesInFrame( Mat frame )
     if(faces.size()==s&&profile_faces.size()==s)
     {
         body_cascade.detectMultiScale( frame_gray, bodies, 1.1,6, 0|CASCADE_SCALE_IMAGE, Size(50, 50) );
-        cout<<" bodies " << bodies.size() <<endl;
+        cout<<" bodies " <<bodies.size();
         for ( size_t i = 0; i< bodies.size(); i++ )
         {
             Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
