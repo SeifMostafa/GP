@@ -15,8 +15,15 @@
 using namespace std;
 using namespace cv;
 
-static const int ORG_SOUNDFILE_LENGTH = 5*1000000; // in microseconds
+static const int ORG_SOUNDFILE_LENGTH = 8*1000000; // in microseconds
 static const int ANGLE_THRESHOL=10; // if two persons are in range of this threshold will meet them up and play the ad only one.
+int width=1280;
+double FOV=154,dpp=FOV/((double)width);
+Mat frame1,frame2;
+bool stopFaceDetection = false;
+std::vector<double> AnglesVector;
+VideoCapture capture;
+
 
 std::vector<double> DetectFacesInFrame( Mat frame );
 Mat RunFaceDetection();
@@ -34,16 +41,6 @@ CascadeClassifier body_cascade;
 CascadeClassifier frontalFace_cascade;
 CascadeClassifier profileFace_cascade;
 String window_name = "Capture - Face detection";
-
-int width=1280;
-double FOV=154,dpp=FOV/((double)width);
-Mat frame1,frame2;
-
-
-bool stopFaceDetection = false;
-std::vector<double> AnglesVector;
-VideoCapture capture;
-
 
 void remove(std::vector<double>& vec, size_t pos)
 {
@@ -618,7 +615,7 @@ std::vector<double> DetectFacesInFrame( Mat frame )
 double angle(double x,bool flipped)
 {
     int positionAngle = x*dpp;
-    if(flipped) positionAngle=154-positionAngle; //154 is the whole field of view it may differ
+    if(flipped) positionAngle=FOV-positionAngle; //154 is the whole field of view it may differ
     return positionAngle;
 }
 Mat RunFaceDetection()

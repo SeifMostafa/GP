@@ -10,8 +10,8 @@ while not connected:
     serin = ser.read()
     connected =True
 
-counter=""+ sys.argv[1]
-ser.write(counter)
+desiredPosition=""+ sys.argv[1]
+ser.write(desiredPosition)
 time.sleep(5)
 
 while not arrived:

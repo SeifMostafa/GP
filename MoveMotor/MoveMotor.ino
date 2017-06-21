@@ -1,6 +1,5 @@
 int stp =8,dir=9;
 // analog read angle
-int val;
 void setup()
 {               
   pinMode(stp, OUTPUT);
@@ -34,19 +33,19 @@ void loop()
   if(Serial.available() > 0)
   {
     String str = Serial.readStringUntil('\n');
-    val = str.toInt();
-    Serial.println(val);
+    DesiredPosition = str.toInt();
+    Serial.println(DesiredPosition);
     
-    if(val<0){
+    if(DesiredPosition<0){
       changeDirection();
-      val=val*-1;
-      run(val);
+      DesiredPosition=DesiredPosition*-1;
+      run(DesiredPosition);
       changeDirection2();
         Serial.write("$");
 
     }
     else{
-      run(val);
+      run(DesiredPosition);
         Serial.write("$");
     }
    

@@ -7,5 +7,4 @@ while True:
 	state = GPIO.input(18)
     if state == False:
         os.system("sudo shutdown -h now")
-    prev_state = state
     time.sleep(0.10)
