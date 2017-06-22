@@ -310,7 +310,7 @@ void ExeAnglesForInternalGroup(std::vector<double>Group)
         usleep(PeriodAmongInCurrentMoves);
     }
 }
-bool CheckNextTripIsExis( std::vector<double> NewFaces, double NextTripAt)
+bool CheckNextTripIsExist( std::vector<double> NewFaces, double NextTripAt)
 {
     for(int i=0; i<NewFaces.size(); i++)
     {
@@ -351,7 +351,7 @@ void ExeAngles(std::vector<double>InCurrent, std::vector<double>others)
                 if(NewFaces.size()>0)
                 {
 
-                    if(!CheckNextTripIsExis(NewFaces,others.at(i+1))) return;
+                    if(!CheckNextTripIsExist(NewFaces,others.at(i+1))) return;
                 }
             }
         }
