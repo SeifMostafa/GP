@@ -1,18 +1,16 @@
 cmake_minimum_required(VERSION 3.2.0)
-project( facedetect )
+project( master )
 
 find_package( OpenCV REQUIRED )
-find_package(Threads REQUIRED) 
 
 # Include headers
 include_directories(${WIRINGPI_INCLUDE_DIRS})
 
-add_executable( facedetect facedetect.cpp )
-target_link_libraries( facedetect ${OpenCV_LIBS} )
-target_link_libraries(facedetect ${CMAKE_THREAD_LIBS_INIT}) 
+add_executable( master Master.cpp )
+target_link_libraries( master ${OpenCV_LIBS} )
 
 install(
-	FILES facedetect
+	FILES master
 	PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-	DESTINATION /home/pi/Documents/REPO/GP
+	DESTINATION /home/pi/Documents/GP
 )

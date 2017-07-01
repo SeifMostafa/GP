@@ -6,20 +6,34 @@
 
 #IncludeRegexTransform: 
 
-/home/pi/Documents/REPO/GP/facedetect.cpp
+/home/pi/Documents/GP/Master.cpp
 opencv2/objdetect/objdetect.hpp
-/home/pi/Documents/REPO/GP/opencv2/objdetect/objdetect.hpp
+/home/pi/Documents/GP/opencv2/objdetect/objdetect.hpp
 opencv2/videoio.hpp
-/home/pi/Documents/REPO/GP/opencv2/videoio.hpp
+/home/pi/Documents/GP/opencv2/videoio.hpp
 opencv2/highgui/highgui.hpp
-/home/pi/Documents/REPO/GP/opencv2/highgui/highgui.hpp
+/home/pi/Documents/GP/opencv2/highgui/highgui.hpp
 opencv2/imgproc/imgproc.hpp
-/home/pi/Documents/REPO/GP/opencv2/imgproc/imgproc.hpp
+/home/pi/Documents/GP/opencv2/imgproc/imgproc.hpp
 iostream
 -
 fstream
 -
+utility
+-
+algorithm
+-
+stdlib.h
+-
 stdio.h
+-
+vector
+-
+string.h
+-
+unistd.h
+-
+exception
 -
 
 /usr/local/include/opencv/cxcore.h
@@ -138,6 +152,8 @@ nmmintrin.h
 popcntintrin.h
 -
 immintrin.h
+-
+arm_neon.h
 -
 immintrin.h
 -
@@ -330,6 +346,8 @@ opencv2/core.hpp
 opencv2/core.hpp
 /usr/local/include/opencv2/core/opencv2/core.hpp
 ostream
+-
+functional
 -
 opencv2/core/core_c.h
 /usr/local/include/opencv2/core/opencv2/core/core_c.h

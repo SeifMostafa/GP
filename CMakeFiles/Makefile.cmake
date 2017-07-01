@@ -25,7 +25,6 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-3.6/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake-3.6/Modules/CMakeCommonLanguageInclude.cmake"
   "/usr/share/cmake-3.6/Modules/CMakeCompilerIdDetection.cmake"
-  "/usr/share/cmake-3.6/Modules/CMakeConfigurableFile.in"
   "/usr/share/cmake-3.6/Modules/CMakeDetermineCCompiler.cmake"
   "/usr/share/cmake-3.6/Modules/CMakeDetermineCXXCompiler.cmake"
   "/usr/share/cmake-3.6/Modules/CMakeDetermineCompileFeatures.cmake"
@@ -45,11 +44,6 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-3.6/Modules/CMakeTestCXXCompiler.cmake"
   "/usr/share/cmake-3.6/Modules/CMakeTestCompilerCommon.cmake"
   "/usr/share/cmake-3.6/Modules/CMakeUnixFindMake.cmake"
-  "/usr/share/cmake-3.6/Modules/CheckFunctionExists.c"
-  "/usr/share/cmake-3.6/Modules/CheckIncludeFile.c.in"
-  "/usr/share/cmake-3.6/Modules/CheckIncludeFile.cmake"
-  "/usr/share/cmake-3.6/Modules/CheckLibraryExists.cmake"
-  "/usr/share/cmake-3.6/Modules/CheckSymbolExists.cmake"
   "/usr/share/cmake-3.6/Modules/Compiler/ADSP-DetermineCompiler.cmake"
   "/usr/share/cmake-3.6/Modules/Compiler/ARMCC-DetermineCompiler.cmake"
   "/usr/share/cmake-3.6/Modules/Compiler/AppleClang-DetermineCompiler.cmake"
@@ -96,7 +90,6 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-3.6/Modules/Compiler/zOS-CXX-DetermineCompiler.cmake"
   "/usr/share/cmake-3.6/Modules/FindPackageHandleStandardArgs.cmake"
   "/usr/share/cmake-3.6/Modules/FindPackageMessage.cmake"
-  "/usr/share/cmake-3.6/Modules/FindThreads.cmake"
   "/usr/share/cmake-3.6/Modules/Internal/FeatureTesting.cmake"
   "/usr/share/cmake-3.6/Modules/Platform/Linux-CXX.cmake"
   "/usr/share/cmake-3.6/Modules/Platform/Linux-GNU-C.cmake"
@@ -124,5 +117,5 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/facedetect.dir/DependInfo.cmake"
+  "CMakeFiles/master.dir/DependInfo.cmake"
   )

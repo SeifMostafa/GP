@@ -18,11 +18,11 @@ using namespace cv;
 static const int ORG_SOUNDFILE_LENGTH = 8*1000000; // in microseconds
 static const int ANGLE_THRESHOL=10; // if two persons are in range of this threshold will meet them up and play the ad only one.
 int width=1280;
-double FOV=154,dpp=FOV/((double)width);
+double FOV=166,dpp=FOV/((double)width);
 Mat frame1,frame2;
 bool stopFaceDetection = false;
 std::vector<double> AnglesVector;
-VideoCapture capture;
+VideoCapture capture,capture1;
 
 
 std::vector<double> DetectFacesInFrame( Mat frame );
@@ -40,7 +40,7 @@ String profileFace_cascade_name ="haarcascade_profileface.xml";
 CascadeClassifier body_cascade;
 CascadeClassifier frontalFace_cascade;
 CascadeClassifier profileFace_cascade;
-String window_name = "Capture - Face detection";
+String window_name = "Hello, Product!";
 
 void remove(std::vector<double>& vec, size_t pos)
 {
@@ -81,7 +81,7 @@ public:
         {
             ofstream outfile;
             //outfile.open("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",ios::out | ios::trunc );
-            outfile.open("/home/pi/Documents/REPO/GP/dbrw",ios::out | ios::trunc );
+            outfile.open("/home/pi/Documents/GP/dbrw",ios::out | ios::trunc );
             outfile<<angle<<endl;
             outfile.close();
         }
@@ -96,7 +96,7 @@ public:
         {
             ifstream infile;
            // infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",  ios::out | ios::in );
-            infile.open ("/home/pi/Documents/REPO/GP/dbrw",  ios::out | ios::in );
+            infile.open ("/home/pi/Documents/GP/dbrw",  ios::out | ios::in );
             string buffer="";
             while (infile.good())
             {
@@ -122,7 +122,7 @@ public:
 
             ifstream infile;
             //infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/reached",  ios::out | ios::in );
-            infile.open ("/home/pi/Documents/REPO/GP/reached",  ios::out | ios::in );
+            infile.open ("/home/pi/Documents/GP/reached",  ios::out | ios::in );
             string buffer="";
             while (infile.good())
             {
@@ -147,7 +147,7 @@ public:
         {
             std::ofstream ofs;
            // ofs.open("/home/azizax/Documents/fci/GP/CODE/GP/reached", std::ofstream::out | std::ofstream::trunc);
-            ofs.open("/home/pi/Documents/REPO/GP/reached", std::ofstream::out | std::ofstream::trunc);
+            ofs.open("/home/pi/Documents/GP/reached", std::ofstream::out | std::ofstream::trunc);
             ofs.close();
         }
         catch(std::exception  const &exc)
@@ -164,7 +164,7 @@ void MoveMotor(double angle)
 
         char str_steps[4];
        // char cmd [91]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 91 is the total size of path
-        char cmd [80]= "python /home/pi/Documents/REPO/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 80 is the total size of path
+        char cmd [74]= "python /home/pi/Documents/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 80 is the total size of path
         int steps =0;
         int prev = Dbrw::ReadAngle();
         cout<<"Angle: " <<angle <<" prev: "<< prev<< endl;
@@ -201,7 +201,7 @@ void PlaySound()
     {
 
     //system("python /home/azizax/Documents/fci/GP/CODE/GP/playsound.py");
-      system("/home/pi/Documents/REPO/GP/playsound.py");
+      system("/home/pi/Documents/GP/playsound.py");
 
         cout<<"DO U HEAR ME?!\n";
     }
@@ -370,7 +370,7 @@ std::vector<double> SortAngles(std::vector<double> AV)
     std::vector<double>WellSortedAnglesVector;
     std::sort (AV.begin(), AV.end());
     int currentPosition = Dbrw::ReadAngle();
-    currentPosition = 80;
+    //currentPosition = 80;
     //cout<<"currentPosition: "<< currentPosition<<endl;
     if(AV.size()>0)
     {
@@ -461,7 +461,7 @@ int ThresholdingGroupPeople(std::vector<double>&v,std::vector<double>&InCurrent)
 
             std::sort (v.begin(), v.end());
             int currentPosition = Dbrw::ReadAngle();
-            currentPosition = 80;
+            //currentPosition = 80;
             /**
                 groups:  may contain 1-v.size() people
                 best case == ruch , people stand front of the product
@@ -615,22 +615,28 @@ std::vector<double> DetectFacesInFrame( Mat frame )
 double angle(double x,bool flipped)
 {
     int positionAngle = x*dpp;
-    if(flipped) positionAngle=FOV-positionAngle; //154 is the whole field of view it may differ
+    if(flipped) positionAngle=FOV-positionAngle; //166 is the whole field of view it may differ
     return positionAngle;
 }
 Mat RunFaceDetection()
 {
+	capture.set(CV_CAP_PROP_FRAME_WIDTH,1280);
+capture.set(CV_CAP_PROP_FRAME_HEIGHT,720);
     capture.open(0);
     capture.read(frame1);
-    capture.release();
-    capture.open(1);
-    capture.read(frame2);
-    capture.release();
+
+	capture1.set(CV_CAP_PROP_FRAME_WIDTH,1280);
+capture1.set(CV_CAP_PROP_FRAME_HEIGHT,720);
+    capture1.open(1);
+    capture1.read(frame2);
+
     int rows = max(frame1.rows, frame2.rows);
     int cols = frame1.cols + frame2.cols;
     Mat3b frame(rows, cols, Vec3b(0,0,0));
     frame1.copyTo(frame(Rect(0, 0, frame1.cols, frame1.rows)));
     frame2.copyTo(frame(Rect(frame1.cols, 0, frame2.cols, frame2.rows)));
+	Size size(1280,720);
+	resize(frame,frame,size);
     return frame;
 }
 

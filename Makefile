@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/Documents/REPO/GP
+CMAKE_SOURCE_DIR = /home/pi/Documents/GP
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/Documents/REPO/GP
+CMAKE_BINARY_DIR = /home/pi/Documents/GP
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -77,17 +77,6 @@ install/strip: preinstall
 install/strip/fast: install/strip
 
 .PHONY : install/strip/fast
-
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
 
 # Special rule for the target list_install_components
 list_install_components:
@@ -122,11 +111,22 @@ install/local/fast: install/local
 
 .PHONY : install/local/fast
 
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
+
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/Documents/REPO/GP/CMakeFiles /home/pi/Documents/REPO/GP/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/Documents/GP/CMakeFiles /home/pi/Documents/GP/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/Documents/REPO/GP/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/Documents/GP/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -155,44 +155,44 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named facedetect
+# Target rules for targets named master
 
 # Build rule for target.
-facedetect: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 facedetect
-.PHONY : facedetect
+master: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 master
+.PHONY : master
 
 # fast build rule for target.
-facedetect/fast:
-	$(MAKE) -f CMakeFiles/facedetect.dir/build.make CMakeFiles/facedetect.dir/build
-.PHONY : facedetect/fast
+master/fast:
+	$(MAKE) -f CMakeFiles/master.dir/build.make CMakeFiles/master.dir/build
+.PHONY : master/fast
 
-facedetect.o: facedetect.cpp.o
+Master.o: Master.cpp.o
 
-.PHONY : facedetect.o
+.PHONY : Master.o
 
 # target to build an object file
-facedetect.cpp.o:
-	$(MAKE) -f CMakeFiles/facedetect.dir/build.make CMakeFiles/facedetect.dir/facedetect.cpp.o
-.PHONY : facedetect.cpp.o
+Master.cpp.o:
+	$(MAKE) -f CMakeFiles/master.dir/build.make CMakeFiles/master.dir/Master.cpp.o
+.PHONY : Master.cpp.o
 
-facedetect.i: facedetect.cpp.i
+Master.i: Master.cpp.i
 
-.PHONY : facedetect.i
+.PHONY : Master.i
 
 # target to preprocess a source file
-facedetect.cpp.i:
-	$(MAKE) -f CMakeFiles/facedetect.dir/build.make CMakeFiles/facedetect.dir/facedetect.cpp.i
-.PHONY : facedetect.cpp.i
+Master.cpp.i:
+	$(MAKE) -f CMakeFiles/master.dir/build.make CMakeFiles/master.dir/Master.cpp.i
+.PHONY : Master.cpp.i
 
-facedetect.s: facedetect.cpp.s
+Master.s: Master.cpp.s
 
-.PHONY : facedetect.s
+.PHONY : Master.s
 
 # target to generate assembly for a file
-facedetect.cpp.s:
-	$(MAKE) -f CMakeFiles/facedetect.dir/build.make CMakeFiles/facedetect.dir/facedetect.cpp.s
-.PHONY : facedetect.cpp.s
+Master.cpp.s:
+	$(MAKE) -f CMakeFiles/master.dir/build.make CMakeFiles/master.dir/Master.cpp.s
+.PHONY : Master.cpp.s
 
 # Help Target
 help:
@@ -202,14 +202,14 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... install/strip"
-	@echo "... rebuild_cache"
 	@echo "... list_install_components"
 	@echo "... install"
 	@echo "... install/local"
-	@echo "... facedetect"
-	@echo "... facedetect.o"
-	@echo "... facedetect.i"
-	@echo "... facedetect.s"
+	@echo "... rebuild_cache"
+	@echo "... master"
+	@echo "... Master.o"
+	@echo "... Master.i"
+	@echo "... Master.s"
 .PHONY : help
 
 
