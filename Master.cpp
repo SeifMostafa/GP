@@ -598,7 +598,7 @@ std::vector<double> DetectFacesInFrame( Mat frame )
     if(faces.size()==s&&profile_faces.size()==s)
     {
         body_cascade.detectMultiScale( frame_gray, bodies, 1.1,6, 0|CASCADE_SCALE_IMAGE, Size(50, 50) );
-        cout<<" bodies " <<bodies.size();
+        cout<<" bodies " <<bodies.size()<<endl;
         for ( size_t i = 0; i< bodies.size(); i++ )
         {
             Point center( bodies[i].x + bodies[i].width/2, bodies[i].y + bodies[i].height/2 );
