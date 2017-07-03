@@ -164,7 +164,7 @@ void MoveMotor(double angle)
 
         char str_steps[4];
         // char cmd [91]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 91 is the total size of path
-        char cmd [74]= "python /home/pi/Documents/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 80 is the total size of path
+        char cmd [75]= "python /home/pi/Documents/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 80 is the total size of path
         int steps =0;
         int prev = Dbrw::ReadAngle();
         cout<<"Angle: " <<angle <<" prev: "<< prev<< endl;
@@ -542,7 +542,7 @@ std::vector<double> DetectFacesInFrame( Mat frame )
     std::vector<Rect> profile_faces_flip;
     std::vector<double>facesAngles;
 
-    Mat frame_gray=Mat::zeros( frame.size(), frame.type() );
+    Mat frame_gray ,flip_frame_gray;
     cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
     equalizeHist( frame_gray, frame_gray );
     // Detect faces
@@ -566,7 +566,7 @@ std::vector<double> DetectFacesInFrame( Mat frame )
     }
     if(faces.size()==s)
     {
-        profileFace_cascade.detectMultiScale(frame_gray, profile_faces, 1.1,6,0|CASCADE_SCALE_IMAGE, Size(10, 30));
+        profileFace_cascade.detectMultiScale(frame_gray, profile_faces, 1.1,6,0|CASCADE_SCALE_IMAGE, Size(30, 30));
         cout <<" profile faces"<<profile_faces.size()<<endl;
         // cout <<"frontal "<<faces.size()<<endl;
 
@@ -580,9 +580,9 @@ std::vector<double> DetectFacesInFrame( Mat frame )
             cout << angle(center.x,1) << endl;
 
         }
-        Mat flip_frame_gray;
+        //Mat flip_frame_gray;
         flip(frame_gray,flip_frame_gray, 1);
-        profileFace_cascade.detectMultiScale(flip_frame_gray, profile_faces_flip, 1.1,6,0|CASCADE_SCALE_IMAGE, Size(10, 30));
+        profileFace_cascade.detectMultiScale(flip_frame_gray, profile_faces_flip, 1.1,6,0|CASCADE_SCALE_IMAGE, Size(30, 30));
         cout <<" profile_faces_flip"<<profile_faces_flip.size()<<endl;
         // cout <<"frontal "<<faces.size()<<endl;
 
@@ -599,7 +599,7 @@ std::vector<double> DetectFacesInFrame( Mat frame )
     }
     if(faces.size()==s&&profile_faces.size()==s)
     {
-        body_cascade.detectMultiScale( frame_gray, bodies, 1.1,6, 0|CASCADE_SCALE_IMAGE, Size(50, 50) );
+        body_cascade.detectMultiScale( frame_gray, bodies, 1.2,6, 0|CASCADE_SCALE_IMAGE, Size(70, 300) );
         cout<<" bodies " <<bodies.size();
         for ( size_t i = 0; i< bodies.size(); i++ )
         {
@@ -638,7 +638,7 @@ Mat RunFaceDetection()
     frame1.copyTo(frame(Rect(0, 0, frame1.cols, frame1.rows)));
     frame2.copyTo(frame(Rect(frame1.cols, 0, frame2.cols, frame2.rows)));
     Size size(1280,720);
-    resize(frame,frame,size);
+    //resize(frame,frame,size);
     return frame;
 }
 
