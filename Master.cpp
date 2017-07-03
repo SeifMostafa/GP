@@ -95,7 +95,7 @@ public:
         try
         {
             ifstream infile;
-           // infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",  ios::out | ios::in );
+            // infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/dbrw",  ios::out | ios::in );
             infile.open ("/home/pi/Documents/GP/dbrw",  ios::out | ios::in );
             string buffer="";
             while (infile.good())
@@ -146,7 +146,7 @@ public:
         try
         {
             std::ofstream ofs;
-           // ofs.open("/home/azizax/Documents/fci/GP/CODE/GP/reached", std::ofstream::out | std::ofstream::trunc);
+            // ofs.open("/home/azizax/Documents/fci/GP/CODE/GP/reached", std::ofstream::out | std::ofstream::trunc);
             ofs.open("/home/pi/Documents/GP/reached", std::ofstream::out | std::ofstream::trunc);
             ofs.close();
         }
@@ -163,7 +163,7 @@ void MoveMotor(double angle)
     {
 
         char str_steps[4];
-       // char cmd [91]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 91 is the total size of path
+        // char cmd [91]= "python /home/azizax/Documents/fci/GP/CODE/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 91 is the total size of path
         char cmd [74]= "python /home/pi/Documents/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 80 is the total size of path
         int steps =0;
         int prev = Dbrw::ReadAngle();
@@ -175,19 +175,19 @@ void MoveMotor(double angle)
         ss>>str_steps;
         strcat(cmd,str_steps);
         cout<<cmd<<endl;
-           system(cmd);
+        system(cmd);
 
-           // check reached
-           bool reached=false;
-           while(!reached)
-           {
-               if(Dbrw::ReadReached()==1)
-               {
-                   reached=true;
-                   Dbrw::ClearReached();
-               }
-           }
-         Dbrw::WriteAngle(angle);
+        // check reached
+        bool reached=false;
+        while(!reached)
+        {
+            if(Dbrw::ReadReached()==1)
+            {
+                reached=true;
+                Dbrw::ClearReached();
+            }
+        }
+        Dbrw::WriteAngle(angle);
 
     }
     catch(std::exception  const &exc)
@@ -200,8 +200,8 @@ void PlaySound()
     try
     {
 
-    //system("python /home/azizax/Documents/fci/GP/CODE/GP/playsound.py");
-      system("/home/pi/Documents/GP/playsound.py");
+        //system("python /home/azizax/Documents/fci/GP/CODE/GP/playsound.py");
+        system("/home/pi/Documents/GP/playsound.py");
 
         cout<<"DO U HEAR ME?!\n";
     }
@@ -240,54 +240,56 @@ int main()
                     if(AnglesVector.size()>0)
                     {
                         stopFaceDetection= true;
+
+                        waitKey(500);
+
+                        /// sort faces
+                        try
+                        {
+
+
+
+                            /*AnglesVector.push_back(55.0);
+                            AnglesVector.push_back(22.0);
+                            AnglesVector.push_back(85.0);
+                            AnglesVector.push_back(160.0);
+                            AnglesVector.push_back(35.0);*/
+
+                            ThresholdingGroupPeople(AnglesVector,InCurrent);
+                        }
+                        catch(std::exception  const &exc)
+                        {
+                            cerr<<"ThresholdingGroupPeople from Main: "<<exc.what()<<endl;
+                        }
+
+                        try
+                        {
+                            WellSortedAnglesVector = SortAngles(AnglesVector);
+                        }
+                        catch(std::exception  const &exc)
+                        {
+                            cerr<<"WellSortedAnglesVector - sortAngles from Main: "<<endl;
+                        }
+                        //printVector(InCurrent);
+                        // printVector(WellSortedAnglesVector);
+
+                        /// call motor , sound files
+                        try
+                        {
+                            ExeAngles(InCurrent,WellSortedAnglesVector);
+                        }
+                        catch(std::exception  const &exc)
+                        {
+                            cerr<<"ExeAngles from Main: "<<exc.what()<<endl;
+                        }
+
                     }
-                    waitKey(250);
                 }
             }
             catch(std::exception  const &exc)
             {
                 cerr<<"while FaceDetection from Main: "<<exc.what()<<endl;
             }
-            /// sort faces
-            try
-            {
-
-
-
-                /*AnglesVector.push_back(55.0);
-                AnglesVector.push_back(22.0);
-                AnglesVector.push_back(85.0);
-                AnglesVector.push_back(160.0);
-                AnglesVector.push_back(35.0);*/
-
-                ThresholdingGroupPeople(AnglesVector,InCurrent);
-            }
-            catch(std::exception  const &exc)
-            {
-                cerr<<"ThresholdingGroupPeople from Main: "<<exc.what()<<endl;
-            }
-
-            try
-            {
-                WellSortedAnglesVector = SortAngles(AnglesVector);
-            }
-            catch(std::exception  const &exc)
-            {
-                cerr<<"WellSortedAnglesVector - sortAngles from Main: "<<endl;
-            }
-            //printVector(InCurrent);
-            // printVector(WellSortedAnglesVector);
-
-            /// call motor , sound files
-            try
-            {
-                ExeAngles(InCurrent,WellSortedAnglesVector);
-            }
-            catch(std::exception  const &exc)
-            {
-                cerr<<"ExeAngles from Main: "<<exc.what()<<endl;
-            }
-
         }
         return 0;
     }
@@ -620,13 +622,13 @@ double angle(double x,bool flipped)
 }
 Mat RunFaceDetection()
 {
-	capture.set(CV_CAP_PROP_FRAME_WIDTH,1280);
-capture.set(CV_CAP_PROP_FRAME_HEIGHT,720);
+    capture.set(CV_CAP_PROP_FRAME_WIDTH,1280);
+    capture.set(CV_CAP_PROP_FRAME_HEIGHT,720);
     capture.open(0);
     capture.read(frame1);
 
-	capture1.set(CV_CAP_PROP_FRAME_WIDTH,1280);
-capture1.set(CV_CAP_PROP_FRAME_HEIGHT,720);
+    capture1.set(CV_CAP_PROP_FRAME_WIDTH,1280);
+    capture1.set(CV_CAP_PROP_FRAME_HEIGHT,720);
     capture1.open(1);
     capture1.read(frame2);
 
@@ -635,8 +637,8 @@ capture1.set(CV_CAP_PROP_FRAME_HEIGHT,720);
     Mat3b frame(rows, cols, Vec3b(0,0,0));
     frame1.copyTo(frame(Rect(0, 0, frame1.cols, frame1.rows)));
     frame2.copyTo(frame(Rect(frame1.cols, 0, frame2.cols, frame2.rows)));
-	Size size(1280,720);
-	resize(frame,frame,size);
+    Size size(1280,720);
+    resize(frame,frame,size);
     return frame;
 }
 

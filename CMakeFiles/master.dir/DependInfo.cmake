@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/pi/Documents/GP/Master.cpp" "/home/pi/Documents/GP/CMakeFiles/master.dir/Master.cpp.o"
+  "/home/azizax/Documents/fci/GP/CODE/GP/Master.cpp" "/home/azizax/Documents/fci/GP/CODE/GP/CMakeFiles/master.dir/Master.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
