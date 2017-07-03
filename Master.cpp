@@ -18,7 +18,7 @@ using namespace cv;
 static const int ORG_SOUNDFILE_LENGTH = 8*1000000; // in microseconds
 static const int ANGLE_THRESHOL=10; // if two persons are in range of this threshold will meet them up and play the ad only one.
 int width=1280;
-double FOV=166,dpp=FOV/((double)width);
+double FOV=140,dpp=FOV/((double)width);
 Mat frame1,frame2;
 bool stopFaceDetection = false;
 std::vector<double> AnglesVector;
@@ -56,6 +56,7 @@ void remove(std::vector<double>& vec, size_t pos)
     }
 
 }
+
 void printVector(std::vector<double> vec)
 {
     try
@@ -119,7 +120,7 @@ public:
     {
         try
         {
-
+		cout<<"ReadReached:AM HERE"<<endl;
             ifstream infile;
             //infile.open ("/home/azizax/Documents/fci/GP/CODE/GP/reached",  ios::out | ios::in );
             infile.open ("/home/pi/Documents/GP/reached",  ios::out | ios::in );
@@ -169,12 +170,12 @@ void MoveMotor(double angle)
         int prev = Dbrw::ReadAngle();
         cout<<"Angle: " <<angle <<" prev: "<< prev<< endl;
         steps = angle - prev;
-
+if(steps!=0){
         stringstream ss;
         ss<<steps;
         ss>>str_steps;
         strcat(cmd,str_steps);
-        cout<<cmd<<endl;
+        cout<<"motor cmd "<<cmd<<endl;
         system(cmd);
 
         // check reached
@@ -188,7 +189,7 @@ void MoveMotor(double angle)
             }
         }
         Dbrw::WriteAngle(angle);
-
+}
     }
     catch(std::exception  const &exc)
     {
@@ -210,8 +211,45 @@ void PlaySound()
         cerr<<"PlaySound: "<<exc.what()<<endl;
     }
 }
+void resetmotor(){
+try{
+	char str_steps[4];
+        char cmd [75]= "python /home/pi/Documents/GP/DeliveryBoy_DeliverAngleFromPi2Arduino.py "; // 75 is the total size of path
+        int steps =0;
+        int prev = Dbrw::ReadAngle();
+        cout<<"Angle: " << 90 <<" prev: "<< prev<< endl;
+        steps = 90 - prev;
+if(steps!=0){
+
+        stringstream ss;
+        ss<<steps;
+        ss>>str_steps;
+        strcat(cmd,str_steps);
+        cout<<"motor cmd "<<cmd<<endl;
+        system(cmd);
+
+        // check reached
+        bool reached=false;
+        while(!reached)
+        {
+            if(Dbrw::ReadReached()==1)
+            {
+                reached=true;
+                Dbrw::ClearReached();
+            }
+        }
+        Dbrw::WriteAngle(90.0);
+}
+
+}catch(std::exception  const &exc)
+    {
+        cerr<<"RESET MOTOR: "<<exc.what()<<endl;
+    }
+
+}
 int main()
 {
+resetmotor();
     try
     {
         std::vector<double>WellSortedAnglesVector ;
@@ -241,13 +279,9 @@ int main()
                     {
                         stopFaceDetection= true;
 
-                        waitKey(500);
-
                         /// sort faces
                         try
                         {
-
-
 
                             /*AnglesVector.push_back(55.0);
                             AnglesVector.push_back(22.0);
@@ -270,8 +304,8 @@ int main()
                         {
                             cerr<<"WellSortedAnglesVector - sortAngles from Main: "<<endl;
                         }
-                        //printVector(InCurrent);
-                        // printVector(WellSortedAnglesVector);
+                        printVector(InCurrent);
+                        printVector(WellSortedAnglesVector);
 
                         /// call motor , sound files
                         try
@@ -284,6 +318,7 @@ int main()
                         }
 
                     }
+                        waitKey(1000);
                 }
             }
             catch(std::exception  const &exc)
@@ -298,19 +333,23 @@ int main()
         cerr<<"PROGRAM: "<<exc.what()<<endl;
     }
 }
+
 void ExeAnglesForInternalGroup(std::vector<double>Group)
 {
     int PeriodAmongInCurrentMoves =  ORG_SOUNDFILE_LENGTH/Group.size();
     /// play sound for Group
+if(Group.size()>0){
     for(int i=0; i<Group.size(); i++)
     {
         MoveMotor(Group.at(i));
+        usleep(PeriodAmongInCurrentMoves/8);
         if(i==0)
         {
             PlaySound();
         }
-        usleep(PeriodAmongInCurrentMoves);
+        usleep(PeriodAmongInCurrentMoves/4);
     }
+}
 }
 bool CheckNextTripIsExist( std::vector<double> NewFaces, double NextTripAt)
 {
@@ -327,6 +366,7 @@ void ExeAngles(std::vector<double>InCurrent, std::vector<double>others)
         Grouping others into internals
         play sound and move motor for internals
     **/
+cout<<"ExeAngles"<<" AM HERE , others.size: " << others.size() <<"InCur.size()"<< InCurrent.size()<<endl;
     if(InCurrent.size()>0)ExeAnglesForInternalGroup(InCurrent);
 
     std::vector<double>InternalGroup;
@@ -361,7 +401,7 @@ void ExeAngles(std::vector<double>InCurrent, std::vector<double>others)
         if(c<others.size())
         {
             std::vector<double>InternalGroup;
-            InternalGroup.push_back(others.at(others.size()-1));
+            InternalGroup.push_back(others.at(0));
             ExeAnglesForInternalGroup(InternalGroup);
         }
     }
@@ -373,7 +413,7 @@ std::vector<double> SortAngles(std::vector<double> AV)
     std::sort (AV.begin(), AV.end());
     int currentPosition = Dbrw::ReadAngle();
     //currentPosition = 80;
-    //cout<<"currentPosition: "<< currentPosition<<endl;
+    cout<<"currentPosition: "<< currentPosition<<endl;
     if(AV.size()>0)
     {
 
@@ -388,7 +428,8 @@ std::vector<double> SortAngles(std::vector<double> AV)
         else if(AV.at(0)< currentPosition && AV.at(AV.size()-1)< currentPosition)
         {
             //cout<<"min .. max -- > current\n";
-            std::copy(AV.end(),AV.begin(),std::back_inserter(WellSortedAnglesVector));
+             std::reverse(AV.begin(),AV.end());
+            std::copy(AV.begin(),AV.end(),std::back_inserter(WellSortedAnglesVector));
         }
         // min --> the current -- > max
         else
@@ -617,20 +658,21 @@ std::vector<double> DetectFacesInFrame( Mat frame )
 double angle(double x,bool flipped)
 {
     int positionAngle = x*dpp;
-    if(flipped) positionAngle=FOV-positionAngle; //166 is the whole field of view it may differ
+    if(flipped) positionAngle=FOV-positionAngle; //140 is the whole field of view it may differ
     return positionAngle;
 }
 Mat RunFaceDetection()
 {
-    capture.set(CV_CAP_PROP_FRAME_WIDTH,1280);
-    capture.set(CV_CAP_PROP_FRAME_HEIGHT,720);
+    //capture.set(CV_CAP_PROP_FRAME_WIDTH,1280);
+    //capture.set(CV_CAP_PROP_FRAME_HEIGHT,720);
     capture.open(0);
     capture.read(frame1);
-
-    capture1.set(CV_CAP_PROP_FRAME_WIDTH,1280);
-    capture1.set(CV_CAP_PROP_FRAME_HEIGHT,720);
+	capture.release();
+    //capture1.set(CV_CAP_PROP_FRAME_WIDTH,1280);
+    //capture1.set(CV_CAP_PROP_FRAME_HEIGHT,720);
     capture1.open(1);
     capture1.read(frame2);
+	capture1.release();
 
     int rows = max(frame1.rows, frame2.rows);
     int cols = frame1.cols + frame2.cols;

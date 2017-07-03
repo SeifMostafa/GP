@@ -13,7 +13,6 @@ while not connected:
 desiredPosition=""+ sys.argv[1]
 ser.write(desiredPosition)
 time.sleep(5)
-
 while not arrived:
     serin = ser.read()
     if serin == "$":
