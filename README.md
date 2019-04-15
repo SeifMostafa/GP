@@ -1,6 +1,6 @@
 this is the master branch of Hello Product Graduate Project at FCI-CU in 2017 
 Team : 
-Seif Mostafa , Ahmed Al Shaar , Mohamed Ahmed Fouad Al Dakkak , Ghassan Jandli
+Seif Mostafa , Ahmed Al Shaar , Mohamed Ahmed Fouad Al Dakkak , Ghassan Jandali Rifai
 
 
 Shortly : way to make products able to introduce themselves.
